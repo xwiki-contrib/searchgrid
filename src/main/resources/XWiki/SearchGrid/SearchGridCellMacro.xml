@@ -148,7 +148,7 @@
   padding: 0.6rem 1rem;
   display: grid;
   &amp;.searchgrid-grid-cell-row {
-    display: flex;
+    display: flex !important; /** "important" is set in case there are other SearchGrids on the same page with several columns per row, and a display possibly different from "flex". */
     align-items: center;
     p {
       margin: 0;
