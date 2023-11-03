@@ -1,0 +1,613 @@
+<?xml version="1.1" encoding="UTF-8"?>
+
+<!--
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+-->
+
+<xwikidoc version="1.5" reference="XWiki.SearchGrid.SolrSearchMacros" locale="">
+  <web>XWiki.SearchGrid</web>
+  <name>SolrSearchMacros</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <creator>xwiki:XWiki.Admin</creator>
+  <parent>WebHome</parent>
+  <author>xwiki:XWiki.Admin</author>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <version>1.1</version>
+  <title>SolrSearchMacros</title>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>true</hidden>
+  <content>{{include reference="Main.SolrSearchMacros"/}}
+
+{{velocity output="false"}}
+#macro (displaySearchForm)
+  #set($void = $services.progress.startStep('#displaySearchForm'))
+  {{html clean="false"}}
+  &lt;div class="search-form" action="$doc.getURL()" role="search"&gt;
+    &lt;div class="hidden"&gt;
+      &lt;input type="hidden" name="sort" value="$!escapetool.xml($sort)"/&gt;
+      &lt;input type="hidden" name="sortOrder" value="$!escapetool.xml($sortOrder)"/&gt;
+      &lt;input type="hidden" name="highlight" value="$highlightEnabled"/&gt;
+      &lt;input type="hidden" name="facet" value="$facetEnabled"/&gt;
+      ## The parameter used to determine if the request has been redirected with default search filters.
+      &lt;input type="hidden" name="r" value="$!escapetool.xml($request.r)"/&gt;
+      #if ("$!request.debug" != '')
+        &lt;input type="hidden" name="debug" value="$escapetool.xml($request.debug)"/&gt;
+      #end
+      ## Preserve the current facet values when submitting a new search query.
+      #foreach ($entry in $request.parameterMap.entrySet())
+        #if ($entry.key.startsWith('f_') || $entry.key.startsWith('l_'))
+          #foreach ($value in $entry.value)
+            &lt;input type="hidden" name="$escapetool.xml($entry.key)" value="$escapetool.xml($value)"/&gt;
+          #end
+        #end
+      #end
+    &lt;/div&gt;
+    ##&lt;div class="col-xs-12 col-sm-6"&gt;
+      &lt;div class="input-group"&gt;
+        #set ($input = $text)
+        #if ($input == '*')
+          #set ($input = '')
+        #end
+        &lt;input type="search" name="text" class="form-control withTip useTitleAsTip"
+          title="$services.localization.render('searchGrid.textSearch.title')" value="$escapetool.xml($input)"/&gt;
+        &lt;span class="input-group-btn"&gt;
+          &lt;button type="submit" class="btn btn-primary"&gt;
+            $services.icon.renderHTML('search')
+            &lt;span class="sr-only"&gt;$services.localization.render('search.page.bar.submit')&lt;/span&gt;
+          &lt;/button&gt;
+        &lt;/span&gt;
+      &lt;/div&gt;
+    ##&lt;/div&gt;
+  &lt;/div&gt;
+  {{/html}}
+  #set($void = $services.progress.endStep())
+#end
+
+## Customized to display dropdown
+#macro (displaySearchFacet $facetField)
+    #set ($facetRequestParameter = "f_$facetField.name")
+    #set ($facetRequestValues = $request.getParameterValues($facetRequestParameter))
+    #set ($facetValues = [])
+    #foreach ($facetValue in $facetField.values)
+      ## Keep only the values that have at least one match or that are specified on the request.
+      #if ($facetValue.count &gt; 0 || ($facetRequestValues &amp;&amp; $facetRequestValues.contains($facetValue.name)))
+        #set ($discard = $facetValues.add($facetValue))
+      #end
+    #end
+    ## Facets that perform a 'facet.prefix'-based drill down (see https://wiki.apache.org/solr/HierarchicalFaceting) don't
+    ## have any values (not even with 0 count) when the prefix specified on the request doesn't have any "sub-values", but
+    ## we still want to display them to allow the user to reset the filter.
+    #if ($facetValues.size() &gt; 0 || $facetRequestValues)
+      ## Show active facets (that have selected values or that have an explicit limit on the number of values, i.e.
+      ## pagination) as expanded. Collapse the rest, otherwise you have to scroll to see all the available facets.
+      #set ($facetValuesLimit = $request.getParameter("l_$facetField.name"))
+      &lt;div class="search-facet" data-name="$facetField.name"&gt;
+      #displaySearchFacetHeader($facetField)
+      #displaySearchFacetBody($facetField)
+      &lt;/div&gt;
+    #end
+#end
+
+#macro (displaySearchFacetHeader $facetField)
+  #set ($facetPrettyNameKey = "solr.field.$facetField.name")
+  #if ($services.localization.get($facetPrettyNameKey))
+    #set ($facetPrettyName = $services.localization.render($facetPrettyNameKey))
+  #elseif ($facetField.name.startsWith('property.'))
+    ## Display the translated property pretty name.
+    #getXClassProperty($facetField.name $property $classPropertyReference)
+    #set ($facetPrettyName = $property.translatedPrettyName)
+    #if ("$!facetPrettyName" == '')
+      #set ($facetPrettyName = $classPropertyReference.name)
+    #end
+  #else
+    #set ($facetPrettyName = $facetField.name)
+  #end
+  &lt;div class="btn-group"&gt;
+    &lt;button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-label="$escapetool.xml($facetPrettyName)"&gt;
+      &lt;span class="search-facet-name"&gt;$escapetool.xml($facetPrettyName)&lt;/span&gt;
+      &lt;span class="caret"&gt;&lt;/span&gt;
+    &lt;/button&gt;
+    &lt;ul class="dropdown-menu"&gt;
+#end
+
+## Customized to evaluate dynamically the facet display content, otherwise it gets
+## displayed as non interpreted Velocity script.
+#macro (displaySearchFacetBody $facetField $displayType)
+    #set ($facetDisplayer = $solrConfig.facetDisplayers.get($facetField.name))
+    #if (!$facetDisplayer &amp;&amp; $facetField.name.startsWith('property.'))
+      ## Choose a facet displayer based on the property type.
+      #getXClassProperty($facetField.name $property)
+      ## We rely on configuration instead of using a naming convention like "Main.Solr${property.classType}Facet"
+      ## because most of the property types don't need a custom facet displayer.
+      #set ($facetDisplayer = $solrConfig.facetDisplayersByPropertyType.get($property.classType))
+    #end
+    #if ($facetDisplayer)
+      #set ($facetDisplayer = $xwiki.getDocument($facetDisplayer))
+      #if ("$!facetDisplayer.content" != '')
+        #set ($script = $!facetDisplayer.content.replaceAll('\{\{(.+?)\}\}', '')) ## Remove all macros
+        #evaluate($script)
+      #else
+        #displaySearchFacetValues($facetValues)
+      #end
+    #else
+      #displaySearchFacetValues($facetValues)
+    #end
+  ## End list of dropdown menu items
+   &lt;/ul&gt;
+ &lt;/div&gt;
+#end
+
+## Overrides to remove the &lt;ul&gt;
+#macro (displaySearchFacetValues $facetValues $customQueryStringParameters $customValueDisplayer)
+  #if ($facetValues.size() &gt; 0)
+    ##&lt;ul&gt;
+      #displaySearchFacetValuesLimited($facetValues $customQueryStringParameters $customValueDisplayer)
+    ##&lt;/ul&gt;
+  #end
+#end
+
+## Customized to not show the facets header
+#macro (displaySearchFacets $searchResponse)
+  #set($void = $services.progress.startStep('#displaySearchFacets'))
+  (% class="search-facets collapsed-xs xform" %)(((
+    {{html clean="false"}}
+      #foreach ($facetField in $searchResponse.facetFields)
+        #displaySearchFacet($facetField)
+      #end
+    {{/html}}
+  )))
+  #set($void = $services.progress.endStep())
+#end
+
+#*
+## Overrides in particular to be able to use OR operator for multiple fields of the same class. 
+#macro (getSearchResults)
+  #set ($queryString = "$!{text}")
+  ##
+  ## Create the query and set the query string.
+  ##set ($query = $services.query.createQuery($queryString, 'solr'))
+  ## We use OR for properties of the same type
+  #set ($typePropertyClauses = {})
+  #set ($propertyPrefix = 'property.')
+  #foreach ($parameter in $request.parameterMap.entrySet())
+    #if ($parameter.key.startsWith('f_property'))
+      #set ($fieldName = $parameter.key.substring(2))
+      #set ($idx = $fieldName.indexOf('_string'))
+      #if ($idx &gt; 0)
+        #set ($fieldName = $fieldName.substring(0, $idx))
+        #set ($idx = $fieldName.lastIndexOf('.'))
+        #set ($type = $fieldName.substring($propertyPrefix.length(), $idx))
+        #set ($propertyClauses = $typePropertyClauses[$type])
+        #if ($propertyClauses == $NULL)
+          #set ($propertyClauses = [])
+        #end
+        #foreach ($value in $parameter.value)
+          #set ($discard = $propertyClauses.add("${fieldName}:#escapeFilterValue($value)"))
+        #end
+        #set ($typePropertyClauses[$type] = $propertyClauses)
+      #end
+    #end
+  #end
+  #if ($typePropertyClauses.entrySet().size() &gt; 0)
+    #set ($clause = $queryString)
+    #foreach ($entry in $typePropertyClauses.entrySet())
+      ## Use AND or OR depending on usage
+      ###set ($typeClause = $stringtool.join($entry.value, ' OR '))
+      #set ($typeClause = $stringtool.join($entry.value, ' AND '))
+      #set ($clause = "$clause AND ($typeClause)")
+    #end
+    #set ($query = $services.query.createQuery($clause, 'solr'))
+  #else
+    #set ($query = $services.query.createQuery($queryString, 'solr'))
+  #end
+  ##
+  ## Set query parameters.
+  #set ($discard = $query.setLimit($rows))
+  #set ($discard = $query.setOffset($start))
+  #set ($discard = $query.bindValue('sort', "${sort} ${sortOrder}"))
+  #set ($discard = $query.bindValue('tie', $solrConfig.tieBreaker))
+  #set ($discard = $query.bindValue('mm', $solrConfig.minShouldMatch))
+  #setQueryFields($query)
+  #setPhraseFields($query)
+  #setFacetFields($query)
+  #setFilterQuery($query)
+  #setHighlightQuery($query)
+  #if ($debug)
+    #set ($discard = $query.bindValue('debugQuery', 'on'))
+  #end
+  ##
+  ## Execute the query.
+  #set ($searchResponse = $query.execute()[0])
+#end
+*#
+
+#* Customized to use the "hidden" parameter from the request instead of using the user preferences. *#
+#macro (setFilterQuery $query)
+  ##
+  ## Collect the query filters.
+  #set ($filters = {})
+  ## Add the default filters if not specified in the configuration.
+  #if (!$solrConfig.filterQuery || $solrConfig.filterQuery.isEmpty())
+    ## Uncomment the following line of code if you want to search by default also in:
+    ## * the default translation of documents that are not translated in the current locale
+    ## * the "xx" translation if the current locale "xx_YY" doesn't have a translation available
+    ##   (e.g. "pt" when "pt_BR" is not available)
+    ## See the discussion on XWIKI-9977.
+    ##set ($discard = $filters.put('locales', ["$xcontext.locale"]))
+    #if (!$xcontext.isMainWiki())
+      ## Subwikis search by default in their content only.
+      #set ($discard = $filters.put('wiki', [$xcontext.database]))
+    #elseif ($solrConfig.wikisSearchableFromMainWiki)
+      ## The list of wikis that are searched by default can be configured.
+      #set ($discard = $filters.put('wiki', $solrConfig.wikisSearchableFromMainWiki))
+    #end
+    ## Customization:start
+    #set ($hidden = "$!request.hidden")
+    #if ($hidden == 'false')
+      #set ($discard = $filters.put('hidden', [false]))
+    #elseif ($hidden == '' &amp;&amp; $xwiki.getUserPreference('displayHiddenDocuments') != 1)
+      #set ($discard = $filters.put('hidden', [false]))
+    #end
+    ## Customization:end
+  #end
+  ## Add the facets.
+  #set ($prefixFacets = ['space_facet'])
+  #foreach ($parameter in $request.parameterMap.entrySet())
+    #if ($parameter.key.startsWith('f_'))
+      #set ($fieldName = $parameter.key.substring(2))
+      #set ($escapedValues = [])
+      #foreach ($value in $parameter.value)
+        #set ($discard = $escapedValues.add("#escapeFilterValue($value)"))
+      #end
+      #set ($discard = $filters.put($fieldName, $escapedValues))
+      #if ($prefixFacets.contains($fieldName))
+        #set ($parts = $parameter.value.get(0).split('/', 2))
+        #set ($length = $numbertool.toNumber($parts.get(0)).intValue() + 1)
+        #set ($prefix = "$length/$parts.get(1)")
+        #set ($discard = $query.bindValue("f.${fieldName}.facet.prefix", $prefix))
+        #set ($discard = $prefixFacets.remove($fieldName))
+      #end
+    #end
+  #end
+  ## Specify the initial prefix for the remaining prefix facets.
+  #foreach ($facet in $prefixFacets)
+    #set ($discard = $query.bindValue("f.${facet}.facet.prefix", '0/'))
+  #end
+  ##
+  ## Build the filter query.
+  #set ($filterQuery = [])
+  #if ($solrConfig.filterQuery)
+    #set ($discard = $filterQuery.addAll($solrConfig.filterQuery))
+  #end
+  #foreach ($filter in $filters.entrySet())
+    ## Use OR between different values of the same filter/facet.
+    ## Tag the filter so that we can exclude it when faceting in order to support multi-select faceting.
+    #set ($discard = $filterQuery.add("{!tag=$filter.key}$filter.key:($!stringtool.join($filter.value, ' OR '))"))
+  #end
+  #set ($discard = $query.bindValue('fq', $filterQuery))
+#end
+
+
+## Customized for not loading the Main.Search JSX 
+## since we provide one in XWiki.Search.SearchMacro. Do not display form
+#macro (displaySearchUI)
+  #set($void = $services.progress.startStep('#displaySearchUI'))
+  #set($void = $services.progress.pushLevel())
+  ##set ($discard = $xwiki.ssx.use('Main.SolrSearch'))
+  ##set ($discard = $xwiki.jsx.use('Main.SolrSearch'))
+  ## Disable the document extra data: comments, attachments, history...
+  #set ($displayDocExtra = false)
+  #processRequestParameters()
+  (% class="search-ui" %)(((
+    #if ($xcontext.action == 'get')
+      {{html clean="false"}}
+      ## The search UI is updated dynamically through AJAX and we need to pull the skin extensions.
+      ## We put the skin extension imports inside a &lt;noscript&gt; element to prevent jQuery from fetching the JavaScript
+      ## files automatically (we want to fetch only the new JavaScript files).
+      &lt;noscript class="hidden skin-extension-imports"&gt;#skinExtensionHooks&lt;/noscript&gt;
+      {{/html}}
+
+    #end
+    (% class="searchgrid-toolbar" %)(((
+      #if ($text != '')
+        #getSearchResults()
+        #if ($debug)
+          #displaySearchDebugInfo()
+        #end
+        #if ($facetEnabled)
+          #displaySearchFacets($searchResponse)
+        #end
+        #displaySearchForm()
+        #displaySearchResultsSort()
+      )))
+      #displaySearchResults()
+    #end
+  )))
+  #set($void = $services.progress.popLevel())
+  #set($void = $services.progress.endStep())
+#end
+
+#*
+## Customized to handle OR/AND between several fields of same class
+#macro (setFilterQuery $query)
+  ##
+  ## Collect the query filters.
+  #set ($filters = {})
+  ## Add the default filters if not specified in the configuration.
+  #if (!$solrConfig.filterQuery || $solrConfig.filterQuery.isEmpty())
+    ## Uncomment the following line of code if you want to search by default also in:
+    ## * the default translation of documents that are not translated in the current locale
+    ## * the "xx" translation if the current locale "xx_YY" doesn't have a translation available
+    ##   (e.g. "pt" when "pt_BR" is not available)
+    ## See the discussion on XWIKI-9977.
+    ##set ($discard = $filters.put('locales', ["$xcontext.locale"]))
+    #if (!$xcontext.isMainWiki())
+      ## Subwikis search by default in their content only.
+      #set ($discard = $filters.put('wiki', [$xcontext.database]))
+    #elseif ($solrConfig.wikisSearchableFromMainWiki)
+      ## The list of wikis that are searched by default can be configured.
+      #set ($discard = $filters.put('wiki', $solrConfig.wikisSearchableFromMainWiki))
+    #end
+    #if ($xwiki.getUserPreference('displayHiddenDocuments') != 1)
+      #set ($discard = $filters.put('hidden', [false]))
+    #end
+  #end
+  ## Add the facets.
+  #set ($prefixFacets = ['space_facet'])
+  #foreach ($parameter in $request.parameterMap.entrySet())
+    #if ($parameter.key.startsWith('f_'))
+      #set ($fieldName = $parameter.key.substring(2))
+      #if ($fieldName.indexOf('_string') &lt; 0)
+        #set ($escapedValues = [])
+        #foreach ($value in $parameter.value)
+          #set ($discard = $escapedValues.add("#escapeFilterValue($value)"))
+        #end
+        #set ($discard = $filters.put($fieldName, $escapedValues))
+      #end
+      #if ($prefixFacets.contains($fieldName))
+        #set ($parts = $parameter.value.get(0).split('/', 2))
+        #set ($length = $numbertool.toNumber($parts.get(0)).intValue() + 1)
+        #set ($prefix = "$length/$parts.get(1)")
+        #set ($discard = $query.bindValue("f.${fieldName}.facet.prefix", $prefix))
+        #set ($discard = $prefixFacets.remove($fieldName))
+      #end
+    #end
+  #end
+  ## Specify the initial prefix for the remaining prefix facets.
+  #foreach ($facet in $prefixFacets)
+    #set ($discard = $query.bindValue("f.${facet}.facet.prefix", '0/'))
+  #end
+  ##
+  ## Build the filter query.
+  #set ($filterQuery = [])
+  #if ($solrConfig.filterQuery)
+    #set ($discard = $filterQuery.addAll($solrConfig.filterQuery))
+  #end
+  #foreach ($filter in $filters.entrySet())
+    ## Use OR between different values of the same filter/facet.
+    ## Tag the filter so that we can exclude it when faceting in order to support multi-select faceting.
+    #set ($discard = $filterQuery.add("{!tag=$filter.key}$filter.key:($!stringtool.join($filter.value, ' OR '))"))
+  #end
+  #set ($discard = $query.bindValue('fq', $filterQuery))
+#end
+*#
+
+#macro (displaySearchFacetValue $facetValue $customQueryStringParameters $customValueDisplayer)
+  #set ($selectedValues = [])
+  #if ($facetRequestValues)
+    #set ($discard = $selectedValues.addAll($facetRequestValues.subList(0, $facetRequestValues.size())))
+  #end
+  #set ($selected = $selectedValues.remove($facetValue.name))
+  #if (!$selected)
+    #set ($discard = $selectedValues.add($facetValue.name))
+  #end
+  ## Reset the pagination because the number of results can change when a facet is applied.
+  #set ($queryStringParameters = {$facetRequestParameter: $selectedValues, 'firstIndex': []})
+  #if ($customQueryStringParameters)
+    #set ($discard = $queryStringParameters.putAll($customQueryStringParameters))
+  #end
+  #extendQueryString($url $queryStringParameters)
+  ##&lt;div class="itemCount"&gt;$facetValue.count&lt;/div&gt;
+  #set ($parameters = {})
+  #set ($discard = $parameters.putAll($queryStringParameters))
+  #set ($query = $escapetool.url($parameters))
+  ## We store data attributes in particular for multisearch capabilities
+  &lt;li class="search-facet-item#if ($facetValue.name == '') search-facet-empty-value#end"&gt;
+    &lt;a href="$url" class="itemName#if ($selected) selected#end"
+      data-value="$facetValue.name"
+      data-count="$facetValue.count"
+      data-query="$escapetool.xml($query)"&gt;
+      #if ($facetValue.name == '')
+        #set ($facetPrettyValueKey = "solr.field.${facetField.name}.emptyValue")
+        #if (!$services.localization.get($facetPrettyValueKey))
+          #set ($facetPrettyValueKey = "solr.facets.emptyValue")
+        #end
+        #set ($facetPrettyValue = $services.localization.render($facetPrettyValueKey))
+      #else
+        #set ($facetPrettyValue = $facetValue.name)
+      #end
+      #if ($customValueDisplayer)
+        &lt;span class="search-facet-value"&gt;#evaluate("${escapetool.h}${customValueDisplayer}(${escapetool.d}facetPrettyValue)")&lt;/span&gt;
+        &lt;span class="search-facet-value-count"&gt;($facetValue.count)&lt;/span&gt;
+      #else
+         &lt;span class="search-facet-value"&gt;$escapetool.xml($facetPrettyValue)&lt;/span&gt;
+         &lt;span class="search-facet-value-count"&gt;($facetValue.count)&lt;/span&gt;
+      #end
+    &lt;/a&gt;
+  &lt;/li&gt;
+#end
+
+## Customized to display results with pagination at the bottom only with results count and no RSS link
+#macro (displaySearchResults)
+  #set ($results = $searchResponse.results)
+  #set ($columnCountCss = ' searchgrid-grid-three-cols')
+  #set ($numbers = {'1': 'one', '2': 'two', '3': 'three', '4': 'four', '5': 'five'})
+  #set ($documentProperties = ['author', 'creationdate', 'creator', 'date', 'hidden', 'locale', 'title', 'type', 'wiki'])
+  #if ("$!request.columns" != '')
+    #set ($columnCountCss = ' searchgrid-grid-one-col')
+  #elseif ("$!request.cols" != '')
+    #set ($numberName = $numbers.get($request.cols))
+    #set ($columnCountCss = " searchgrid-grid-${numberName}-cols")
+  #end
+  (% class="searchgrid-grid$columnCountCss" %)(((
+    #if ("$!request.columns" != '')
+      (% class="searchgrid-grid-cell searchgrid-grid-cell-row searchgrid-grid-header" %)(((
+        #set ($columns = $request.columns.split(','))
+        #foreach ($column in $columns)
+          #set ($idx = $column.lastIndexOf('.'))
+          #if ($idx &gt; 0)
+            #set ($column = "${column.substring(0, $idx)}_${column.substring($mathtool.add($idx, 1))}")
+          #elseif ($documentProperties.indexOf($column) &gt;= 0)
+            #set ($column = "searchGrid.doc.${column}")
+          #else
+            #set ($className = $request.f_class)
+            #set ($column = "${className}_${column}")
+          #end
+          (% class="searchgrid-grid-cell-column" %)(((
+            $services.localization.render($column)
+          )))
+        #end
+      )))
+    #end
+    #foreach ($searchResult in $results)
+      #displaySearchResult($searchResult)
+    #end
+  )))
+  #set ($paginationParameters = {
+    'url': $doc.getURL('view', "$!request.queryString.replaceAll('firstIndex=[0-9]*', '')"),
+    'totalItems': $results.numFound,
+    'defaultItemsPerPage': $rows,
+    'position': 'top'
+  })
+  ##set ($discard = $paginationParameters.put('position', 'bottom'))
+  {{html clean="false"}}#pagination($paginationParameters){{/html}}
+#end
+
+
+## Customized to display results as columns and remove search-result class (to remove associated style)
+## and remove col-md-12
+#macro (displaySearchResult $searchResult)
+  #set ($searchResultReference = $services.solr.resolve($searchResult))
+  (% class="type-$searchResult.type.toLowerCase()" %)(((
+    ## We use the HTML macro here mainly because we don't have a way to escape the wiki syntax in the data provided by the user.
+    {{html clean="false" wiki="true"}}
+    #evaluate("${escapetool.h}displaySearchResult_$searchResult.type.toLowerCase()(${escapetool.d}searchResult)")
+    ##displaySearchResultHighlighting($searchResult)
+    {{/html}}
+    #if ($debug)
+
+      ## Scoring debug data.
+      ## The reason we used a separate HTML block with no cleaning is because the scoring debug data may contain some
+      ## characters that are considered invalid by JDOM library which is used for parsing the HTML when cleaning is on.
+      ## E.g. "0x0 is not a legal XML character" (org.jdom.IllegalDataException).
+      {{html clean="false"}}
+      &lt;div class="search-result-debug"&gt;$!escapetool.xml($searchResponse.explainMap.get($searchResult.id))&lt;/div&gt;
+      {{/html}}
+    #end
+  )))
+#end
+
+## Customized display
+#macro (displaySearchResult_document $searchResult)
+  {{searchGridCell
+    reference="$services.model.serialize($searchResultReference)"
+    class="$!request.f_class"
+    hidden="$!searchResult.hidden"
+    columns="$!request.columns"/}}
+#end
+
+## Customized display
+#macro (displaySearchResultTitle)
+  #set ($showLocale = $searchResult.locale != '' &amp;&amp; $searchResult.locale != "$xcontext.locale")
+  #set ($titleURL = $xwiki.getURL($searchResultReference))
+  #if ($showLocale)
+    #set ($titleURL = $xwiki.getURL($searchResultReference, 'view', "language=$searchResult.locale"))
+  #end
+  &lt;h2 class="search-result-title"&gt;
+    &lt;a href="$titleURL"&gt;$escapetool.xml($searchResult.title_)&lt;/a&gt;
+    #if ($showLocale)
+      &lt;span title="$escapetool.xml($services.localization.render('solr.result.language'))"
+        class="search-result-language" &gt;($escapetool.xml($searchResult.locale))&lt;/span&gt;
+    #end
+  &lt;/h2&gt;
+#end
+
+## Customized to not display highlight / facet options
+#macro (displaySearchResultsSort)
+  #set ($defaultSortOrder = $solrConfig.sortFields.get($type))
+  #if (!$defaultSortOrder)
+    #set ($defaultSortOrder = {'score': 'desc'})
+  #end
+  #set ($sortOrderSymbol = {
+    'asc': $services.icon.renderHTML('caret-up'),
+    'desc': $services.icon.renderHTML('caret-down')
+  })
+
+  {{html clean="false"}}
+  &lt;div class="search-sort"&gt;
+    &lt;div class="btn-group"&gt;
+      &lt;button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-label="$services.localization.render('searchGrid.sortBy')"&gt;
+      &lt;span class="sort"&gt;$services.localization.render('searchGrid.sortBy')&lt;/span&gt;
+      &lt;span class="caret"&gt;&lt;/span&gt;
+    &lt;/button&gt;
+    &lt;ul class="dropdown-menu dropdown-menu-right"&gt;
+      #foreach ($entry in $defaultSortOrder.entrySet())
+        #set ($class = 'sort-item')
+        #set ($sortOrderIndicator = $NULL)
+        #set ($targetSortOrder = $entry.value)
+        #if ($sort == $entry.key)
+          #set ($class = "$class active")
+          #set ($sortOrderHint = $services.localization.render("solr.sortOrder.$sortOrder"))
+           #set ($sortOrderIndicator = "&lt;span class=""sort-item-order"" title=""$sortOrderHint""&gt;$sortOrderSymbol.get($sortOrder)&lt;/span&gt;")
+          #set ($targetSortOrder = "#if ($sortOrder == 'asc')desc#{else}asc#end")
+        #end
+        #extendQueryString($url {'sort': [$entry.key], 'sortOrder': [$targetSortOrder]})
+        &lt;li&gt;&lt;a href="$url" class="$class"&gt;$services.localization.render("solr.sortBy.$entry.key")$!sortOrderIndicator&lt;/a&gt;&lt;/li&gt;
+      #end
+    &lt;/ul&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  {{/html}}
+#end
+
+## Customized to use list items (?) and to add map for location
+#macro (displaySearchFacetValuesLimited $facetValues $customQueryStringParameters $customValueDisplayer)
+  #set ($limitRequestParameter = "l_$facetField.name")
+  #set ($limit = $numbertool.toNumber($request.getParameter($limitRequestParameter)).intValue())
+  #if ("$!limit" == '')
+    #set ($limit = $solrConfig.facetPaginationStep)
+  #end
+  #set ($limit = $mathtool.max($mathtool.min($limit, $facetValues.size()), 0))
+  #foreach ($facetValue in $facetValues)
+    #if ($foreach.index &lt; $limit)
+      #displaySearchFacetValue($facetValue $customQueryStringParameters $customValueDisplayer)
+    #else
+      #extendQueryString($url {$limitRequestParameter: [$mathtool.add($limit, $solrConfig.facetPaginationStep)]})
+      &lt;li&gt;&lt;a href="$url" class="more"&gt;&amp;hellip; $escapetool.xml($services.localization.render(
+        'solr.facets.moreValues', [$mathtool.sub($facetValues.size(), $limit)]))&lt;/a&gt;&lt;/li&gt;
+      #break
+    #end
+  #end
+#end
+{{/velocity}}</content>
+</xwikidoc>

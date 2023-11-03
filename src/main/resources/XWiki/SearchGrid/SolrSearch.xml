@@ -1,0 +1,85 @@
+<?xml version="1.1" encoding="UTF-8"?>
+
+<!--
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+-->
+
+<xwikidoc version="1.5" reference="XWiki.SearchGrid.SolrSearch" locale="">
+  <web>XWiki.SearchGrid</web>
+  <name>SolrSearch</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <creator>xwiki:XWiki.Admin</creator>
+  <parent>WebHome</parent>
+  <author>xwiki:XWiki.Admin</author>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <version>1.1</version>
+  <title>SolrSearch</title>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>true</hidden>
+  <content>{{include reference="Main.SolrSearchConfig"/}}
+
+{{include reference="XWiki.SearchGrid.SolrSearchMacros"/}}
+
+{{velocity ouput="false"}}
+#macro (declareFacetDisplayer $className $propertyName)
+  #set ($class = $xwiki.getClass($className))
+  #set ($property = $class.get($propertyName))
+  #set ($facetDescriptor = $propTypeFacetMap[$property.type])
+  #set ($facetType = $facetDescriptor.get(0))
+  #set ($solrFacet = "property.$facet$facetType")
+  #set ($discard = $solrConfig.facetFields.add($solrFacet))
+  #set ($facetDisplayer = $facetDescriptor.get(1))
+  #set ($solrConfig.facetDisplayers[$solrFacet] = $facetDisplayer)
+#end
+#set ($solrConfig.facetFields = [])
+#set ($solrConfig.facetDisplayers = {})
+#set ($facets = $request.getParameterValues('facets'))
+#set ($propTypeFacetMap = {
+  'DBListClass': ['_string', 'XWiki.SearchGrid.PageListFacet'],
+  'DateClass': ['_date', 'XWiki.SearchGrid.SolrDateFacet'],
+  'UsersClass': ['_string', 'XWiki.SearchGrid.SolrUserFacet'],
+  'StringClass': ['_string', 'XWiki.SearchGrid.PageListFacet'],
+  'StaticListClass': ['_string', 'XWiki.SearchGrid.PageListFacet'],
+  'creator': ['', 'XWiki.SearchGrid.SolrUserFacet'],
+  'hidden': ['', 'XWiki.SearchGrid.SolrHiddenFacet']
+})
+#foreach ($facet in $facets)
+  #set ($idx = $facet.lastIndexOf('.'))
+  #if ($idx &gt; 0)
+    #set ($className = $facet.substring(0, $idx))
+    #set ($propertyName = $facet.substring($mathtool.add($idx, 1)))
+    #declareFacetDisplayer($className, $propertyName)
+  #elseif ($facet == 'creator')
+    #set ($discard = $solrConfig.facetFields.add($facet))
+    #set ($solrConfig.facetDisplayers[$facet] = $propTypeFacetMap[$facet].get(1))
+  #elseif ($facet == 'hidden')
+    #set ($discard = $solrConfig.facetFields.add($facet))
+    #set ($solrConfig.facetDisplayers[$facet] = $propTypeFacetMap[$facet].get(1))
+  #elseif ($facet == 'locale')
+    #set ($discard = $solrConfig.facetFields.add($facet))
+  #end
+#end
+#set ($solrConfig['facetPaginationStep'] = 20)
+#handleSolrSearchRequest()
+{{/velocity}}</content>
+</xwikidoc>

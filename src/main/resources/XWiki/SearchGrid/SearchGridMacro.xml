@@ -1,0 +1,1299 @@
+<?xml version="1.1" encoding="UTF-8"?>
+
+<!--
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+-->
+
+<xwikidoc version="1.5" reference="XWiki.SearchGrid.SearchGridMacro" locale="">
+  <web>XWiki.SearchGrid</web>
+  <name>SearchGridMacro</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <creator>xwiki:XWiki.Admin</creator>
+  <parent>WebHome</parent>
+  <author>xwiki:XWiki.Admin</author>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <version>1.1</version>
+  <title>SearchGridMacro</title>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>true</hidden>
+  <content/>
+  <object>
+    <name>XWiki.SearchGrid.SearchGridMacro</name>
+    <number>0</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>b1594cda-0366-4d2b-b669-a59d0a3e3434</guid>
+    <class>
+      <name>XWiki.JavaScriptExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <defaultValue>long</defaultValue>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <contenttype>PureText</contenttype>
+        <disabled>0</disabled>
+        <editor>PureText</editor>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <restricted>0</restricted>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>/**
+ * Copied from Main.SolrSearch JSX with some customizations to:
+ * - Use dropdown facets
+ */
+
+require(['jquery', 'bootstrap'], function($) {
+  var addFacetValueCheckbox = function() {
+    var checkBox = $(document.createElement('input')).attr('type', 'checkbox');
+    checkBox.prop('checked', $(this).hasClass('selected'));
+    // Add the 'checked' attribute so that it can be easily located with CSS.
+    checkBox.prop('checked') &amp;&amp; checkBox.attr('checked', 'checked');
+    // Our checkbox is actually within the "a" element, hence a click already fires an event via the "a"
+    //checkBox.click($.proxy(this, 'click'));
+    // The commented code below was updating the facet header with the first facet value
+    /*if ($(this).hasClass('selected')) {
+      let parents = $(this).parents('ul.dropdown-menu');
+      if (parents.length &gt; 0) {
+        let menu = $(parents.get(0));
+        let buttonLabel = menu.prev().find('.search-facet-name');
+        buttonLabel.text($(this).find('.search-facet-value').text());
+      }
+    }*/
+    // Remove the 'selected' class because the selected state is marked using the check box.
+    $(this).removeClass('selected').prepend(checkBox);
+  };
+
+  var enhanceSearchFacets = function() {
+    var facetsContainer = $(this);
+    // Add a check box before each facet value. We do this from JavaScript because the behaviour of a check box inside
+    // a link is not consistent across different browsers (some follow the link when the check box is clicked, others
+    // don't) and having the check box outside the facet value link requires JavaScript to synchronize them.
+    facetsContainer.find('a.itemName').each(addFacetValueCheckbox);
+  };
+
+
+  //let state = {};
+
+  var updateSearchUI = function(searchGridId, html) {
+    $(`#${searchGridId} .search-ui`).empty();
+    $(`#${searchGridId} .search-ui`).append($(html).children());
+    enhanceSearchUI(searchGridId);
+    $(document).trigger('xwiki:dom:updated', {'elements': $(`#${searchGridId} .search-ui`).toArray()});
+  };
+
+  var reloadSearchUI = function(event) {
+    const searchGridId = event.data.id;
+    if (event.preventDefault) {
+      event.preventDefault();
+    }
+    const $this = $(this);
+    // "this" is what the user clicked on: a tab, a pagination link, an entry in a facet dropdown menu, ...
+    let hash = $this.attr('href');
+    if (hash !== undefined) {
+      // We replace "?" by a hash because in pagination links, the query is stored as a query string
+      // in the pagination links, while it's used as a hash fragment in the tabs, due to a bug
+      // in the way Bootstrap deals with hrefs in tabs (does not support "?").
+      hash = hash.replace('?', '#');
+      readStateFromHash(searchGridId, hash);
+    }
+    search(searchGridId);
+  };
+
+  // TOOD: see why this code is never called, it seems
+  $(window).on('popstate', function(event) {
+    // If there is a request in progress, abort it to prevent its callback from being called.
+    searchRequest &amp;&amp; searchRequest.abort();
+    //$(`#${state['searchGridId']} .search-ui`).attr('aria-busy', true);
+    var state = event.originalEvent.state;
+    var getURL = XWiki.currentDocument.getURL('get', window.location.search.substr(1));
+    searchRequest = $.get(getURL).done(function(html) {
+      //updateSearchUI(html);
+      //setSearchUIState(state);
+    });
+  });
+
+  // Move the skin extension imports brought by AJAX updates to the head of the page.
+  $(document).on('xwiki:dom:updated', function(event, data) {
+    // We want to move only the new imports. For this we need to collect the existing imports (once).
+    var imports;
+    // We don't add the imports directly to the document because jQuery will fetch the JavaScript files, including the
+    // ones that have been already loaded. We append the imports to a detached element and add to the head of the page
+    // only those that are new. See https://api.jquery.com/jQuery.getScript/#caching-requests .
+    $(document.createElement('div')).append($(data.elements).find('noscript.skin-extension-imports').text())
+      .find('link, script').each(function(index, element) {
+        // Collect the existing imports once.
+        imports = imports || $('head').find('link, script').map(function () {
+          return $(this).attr('href') || $(this).attr('src');
+        }).get();
+        var url = $(this).attr('href') || $(this).attr('src');
+        // Move to the head of the page only the new imports.
+        if (url &amp;&amp; imports.indexOf(url) &lt; 0) {
+          $('head').append(this);
+        }
+      });
+    // Make sure this code is not executed twice.
+    $(data.elements).find('noscript.skin-extension-imports').remove();
+  });
+
+  const readStateFromHash = function(searchGridId, hash) {
+    if (hash) {
+      let idx = hash.indexOf('#');
+      hash = hash.substring(idx + 1);
+      // Hack to work around Bootstrap bug with some characters in tab href.
+      hash = hash.replace(/--eq--/g, '=').replace(/--and--/g, '&amp;').replace('--slash--', '/').replace('--star--', '*');
+      $(`#${searchGridId}`).attr('data-query', hash);
+      /*
+       state['query'] = hash;
+      const regex = /solrLiveTableId=([^&amp;]*)&amp;tab=([^&amp;]*)/g;
+      var match = regex.exec(hash);
+      state['tab'] = 0;
+      state['solrLiveTableId'] = '1';
+      if (match != null) {
+        state['solrLiveTableId'] = match[1];
+        state['tab'] = match[2];
+      }*/
+    }
+  }
+
+  const search = function(searchGridId) {
+    const $searchGrid = $(`#${searchGridId}`);
+    $searchGrid.attr('aria-busy', true);
+    //$('.search-ui').empty();
+    const source = new XWiki.Document(XWiki.Model.resolve('XWiki.SearchGrid.SolrSearch', XWiki.EntityType.DOCUMENT));
+    let queryString = $searchGrid.attr('data-query');
+    let text = $searchGrid.find('.search-form input[name="text"]').val();
+    let facetsAttr = $searchGrid.attr('data-facets');
+    let columns = $searchGrid.attr('data-columns');
+    let cols = $searchGrid.attr('data-cols');
+    let params = new URLSearchParams(queryString);
+    if (text !== undefined &amp;&amp; text !== '') {
+      params.set('text', text);
+    } else {
+      params.set('text', '*');
+    }
+    if (columns !== '') {
+      params.set('columns', columns);
+    }
+    if (cols !== '') {
+      params.set('cols', cols);
+    }
+    const facets = facetsAttr.split(',');
+    facets.forEach(facet =&gt; {
+      params.append('facets', facet);
+    });
+    const sourceURL = source.getURL('get', params.toString());
+    // Store query as CSS class in #search element in order to be able to style search results
+    // with rules depending on the query
+    // $('#search').attr('data-query', state['query']);
+    // TODO: should we use outputSyntax=plain
+    const request = $.get(sourceURL);
+    request.done(function(data) {
+      $searchGrid.attr('aria-busy', false);
+      updateSearchUI(searchGridId, data);
+      $(document).trigger('xwiki:searchgrid:entriesUpdated', {'id': searchGridId});
+      // Make sure the browser address bar reflects the new state (and thus the new state can be bookmarked).
+      //window.history.replaceState(state, document.title, doc.getURL() + '#' + state['query']);
+    });
+    request.fail(function(error) {
+      console.log('error: ' + error);
+    });
+  }
+
+  var enhanceSearchUI = function(searchGridId) {
+    const $searchGrid = $(`#${searchGridId}`);
+    $searchGrid.find('.search-facets').each(enhanceSearchFacets);
+    $searchGrid.find([
+      '.search-sort a.sort-item',
+      '.search-options a.options-item',
+      '.pagination a',
+      '.controlPagination a',
+      'a.search-facets-action-reset',
+      '.search-facet a.itemName',
+      '.search-facet a.more',
+      '.search-facet-body .selectedLocation a',
+      '.search-form .input-group-btn'
+    ].join(',')).on('click', {id: searchGridId}, reloadSearchUI);
+    $searchGrid.find('.search-form input[name="text"]').on('keypress', function(event) {
+      //console.log('keypress', event.keyCode);
+       if (13 == event.keyCode) {
+         const customEvent = {data: {id: searchGridId}};
+         reloadSearchUI(customEvent);
+       }
+    });
+  };
+
+  function doSearch(searchGridId) {
+    search(searchGridId);
+    $(`#${searchGridId} a.search-filter`).on('click', {searchGridId: searchGridId}, reloadSearchUI);
+  }
+
+  // Register action when multisearch capability is setup
+  /*
+  $(document).on('xwiki:multisearch:search', function(event, data) {
+    console.log('multisearch', data);
+    if (data) {
+      $('.search-tabs').each(function(index, element) {
+        const solrLiveTableId = $(element).attr('id');
+        let searchFilter = $(`#${solrLiveTableId} a.search-filter`);
+        let filterQuery = searchFilter.attr('data-query');
+        if (data.query &amp;&amp; data.query != '') {
+          searchFilter.attr('data-query', `${filterQuery}&amp;${data.query}`);
+        } else {
+          let facet = data.facet;
+          let value = encodeURIComponent(data.value);
+          let query = `&amp;f_${facet}=${value}`;
+          searchFilter.attr('data-query', filterQuery.replace(query, ''));
+        }
+      });
+      doSearch();
+    }
+  });*/
+   $(document).on('xwiki:searchgrid:search', function(event, data) {
+     /** In case the search is triggered for a specific SearchGrid (eg when a tab is shown),
+      * use the searchgrid id to perform the search (in this case the search operation expects that the 
+      * livetable has a "data-query" attribute containing the query to be sent to Solr).
+      */
+     if (data.id) {
+       doSearch(data.id);
+     } else if (data.queryRegexps) {
+       // Update only the searchgrid(s) whose query attribute matches all regexps present in data.queryRegexps
+       $('.searchgrid').each((index, element) =&gt; {
+         const $element = $(element);
+         const query = $element.attr('data-query');
+         const matches = data.queryRegexps.map(regex =&gt; query.match(regex));
+         //console.log('matches', matches, matches.filter(item =&gt; item != null))
+         if (matches.filter(item =&gt; item != null).length === data.queryRegexps.length) {
+           const searchGridId = $element.attr('id');
+           doSearch(searchGridId);
+         }
+       });
+     } else {
+       /** In case there is no specific id or match parameter, we reload all livetables: the passed query is used to 
+        * update each livetable query: either by adding a clause or by removing one. Typical usage: 
+        * Issue app with the Milestone page listing issues in various statuses. */
+       $('.searchgrid').each((index, element) =&gt; {
+         const $element = $(element);
+         const searchGridId = $element.attr('id');
+         //console.log('activation', data.query, data.facet, data.value, searchGridId);
+         // TODO: instead, launch search when data-query changes
+         let query = $element.attr('data-query');
+         if (!data.query || data.query == '') {
+           // hack TODO: fixme
+           const value = encodeURIComponent(data.value);
+           let str = `f_${data.facet}=${value}`;
+           query = query.replace(str, '');
+         } else {
+           // We update the current element query by setting the values sent
+           // by the multisearch filter for a given facet only: all other query parameters
+           // remain unchanged (eg status etc.).
+           const elementQueryParams = new URLSearchParams(query);
+           const multiSearchQueryParams = new URLSearchParams(data.query);
+           //console.log('facet', data.facet);
+           elementQueryParams.delete(data.facet);
+           //console.log('elementQueryParams', elementQueryParams);
+           //console.log('multiSearchQueryParams', multiSearchQueryParams);
+           for (const multiSearchQueryParam of multiSearchQueryParams) {
+             if (multiSearchQueryParam[0] === data.facet) {
+               const multiSearchQueryParamValues = multiSearchQueryParams.getAll(data.facet);
+               multiSearchQueryParamValues.forEach(value =&gt; {
+                 elementQueryParams.append(data.facet, value);
+               });
+               // We break because otherwise we will add multiple times the same facet values
+               // in case there are more than one.
+               break;
+             }
+           }
+           //console.log('newQueryParams', elementQueryParams);
+           query = elementQueryParams.toString();
+         }
+         $element.attr('data-query', query);
+         doSearch(searchGridId);
+       });
+     }
+   });
+
+    // TODO: update to load only the current livetable once we can include several times
+    // the same JSX with different parameters in a page
+    $('.searchgrid').each((index, element) =&gt; {
+      const $element = $(element);
+      const searchGridId = $element.attr('id');
+      if (!$element.attr('data-activate')) {
+        doSearch(searchGridId);
+      } else {
+        //console.log('Activate:', $element.attr('data-activate'));
+      }
+      $(document).trigger('xwiki:searchgrid:instanceCreated', {'id': searchGridId});
+    });
+
+
+});</code>
+    </property>
+    <property>
+      <name/>
+    </property>
+    <property>
+      <parse>0</parse>
+    </property>
+    <property>
+      <use>onDemand</use>
+    </property>
+  </object>
+  <object>
+    <name>XWiki.SearchGrid.SearchGridMacro</name>
+    <number>0</number>
+    <className>XWiki.StyleSheetExtension</className>
+    <guid>fa6b9850-1cfc-4a91-900e-96814e1137f6</guid>
+    <class>
+      <name>XWiki.StyleSheetExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <defaultValue>long</defaultValue>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <contenttype>PureText</contenttype>
+        <disabled>0</disabled>
+        <editor>PureText</editor>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <restricted>0</restricted>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <contentType>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>contentType</name>
+        <number>6</number>
+        <prettyName>Content Type</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>CSS|LESS</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </contentType>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>.searchgrid {
+  /** This is for the spinner on Firefox and other browsers not supporting the :has pseudo-selector, see Spinner SSX. */
+  position: relative;
+  &amp;[aria-busy="true"] {
+    .searchgrid-grid {
+      visibility: hidden; /** We use hidden because we want the content to remain in place until the new one is loaded, otherwise the page jumps if user has scrolled down previously. */
+    }
+  }
+
+  .search-ui {
+    min-height: 200px; /** Needed for the spinner to show up during the first loading where there is no content in the tab yet. */
+    .searchgrid-toolbar {
+      display: grid;
+      grid-template-areas: "facets input sort";
+      grid-template-columns: auto 1fr .1fr;
+      margin-bottom: 0.6rem;
+      .search-facets {
+        grid-area: facets;
+        box-shadow: none;
+        .btn-group {
+          margin: 0;
+        }
+        .search-facet {
+          display: inline-block;
+          border-bottom: none;
+          padding: 0;
+          margin-right: 0.3rem;
+          &amp;:last-child {
+            padding-right: .3rem;
+          }
+          /** Do not display any entry in the dropdown menu for empty values. */
+          .search-facet-empty-value {
+            display: none;
+          }
+          .search-facet-item &gt; a {
+            font-size: 1.2rem;
+          }
+        }
+      }
+
+      .search-form {
+        width: 200px;
+        grid-area: input;
+        .input-group {
+          display: flex;
+          .btn {
+            height: 100%;
+          }
+        }
+        &gt; div {
+          padding: 0;
+          input {
+            border-radius: 0;
+            border: 1px solid @brand-primary;
+          }
+          .input-group-btn {
+            width: inherit;
+          }
+        }
+      }
+
+      .search-sort {
+        grid-area: sort;
+      }
+    }
+
+    .searchgrid-grid {
+      display: grid;
+      grid-row-gap: 1rem;
+      grid-column-gap: 1rem;
+
+      &amp;.searchgrid-grid-one-col {
+        grid-template-columns: 1fr;
+        grid-row-gap: 0.5rem;
+        .searchgrid-grid-header {
+          border: 1px solid @xwiki-border-color;
+          padding: .6rem 1rem;
+          background: lighten(@xwiki-border-color, 7%);
+          font-weight: bold;
+          .searchgrid-grid-cell {
+            p {
+              margin: 0;
+            }
+          }
+        }
+      }
+
+      &amp;.searchgrid-grid-two-cols {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      &amp;.searchgrid-grid-three-cols {
+        grid-template-columns: 1fr 1fr 1fr;
+      }
+
+      .searchgrid-grid-cell {
+        transition: background-color .2s ease,border-color .2s ease;
+        height: 100%;
+        h1 {
+          font-size: 20px;
+          margin-top: 0;
+        }
+        /*&amp;:hover {
+        background: #fafafa;
+      }*/
+      }
+    }
+    .paginationFilter {
+      margin-top: 0.3rem;
+    }
+  }
+}
+
+</code>
+    </property>
+    <property>
+      <contentType>LESS</contentType>
+    </property>
+    <property>
+      <name/>
+    </property>
+    <property>
+      <parse>0</parse>
+    </property>
+    <property>
+      <use>onDemand</use>
+    </property>
+  </object>
+  <object>
+    <name>XWiki.SearchGrid.SearchGridMacro</name>
+    <number>0</number>
+    <className>XWiki.WikiMacroClass</className>
+    <guid>91e75479-d5f2-4720-8a8e-21d19476e255</guid>
+    <class>
+      <name>XWiki.WikiMacroClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <async_cached>
+        <defaultValue>0</defaultValue>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType/>
+        <name>async_cached</name>
+        <number>13</number>
+        <prettyName>Cached</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </async_cached>
+      <async_context>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>1</multiSelect>
+        <name>async_context</name>
+        <number>14</number>
+        <prettyName>Context elements</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator>, </separator>
+        <separators>|, </separators>
+        <size>5</size>
+        <unmodifiable>0</unmodifiable>
+        <values>action=Action|doc.reference=Document|icon.theme=Icon theme|locale=Language|rendering.defaultsyntax=Default syntax|rendering.restricted=Restricted|rendering.targetsyntax=Target syntax|request.base=Request base URL|request.cookies|request.headers|request.parameters=Request parameters|request.remoteAddr|request.url=Request URL|request.wiki=Request wiki|user=User|wiki=Wiki</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </async_context>
+      <async_enabled>
+        <defaultValue>0</defaultValue>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType/>
+        <name>async_enabled</name>
+        <number>12</number>
+        <prettyName>Asynchronous rendering</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </async_enabled>
+      <code>
+        <disabled>0</disabled>
+        <editor>Text</editor>
+        <name>code</name>
+        <number>10</number>
+        <prettyName>Macro code</prettyName>
+        <restricted>0</restricted>
+        <rows>20</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <contentDescription>
+        <contenttype>PureText</contenttype>
+        <disabled>0</disabled>
+        <editor>PureText</editor>
+        <name>contentDescription</name>
+        <number>9</number>
+        <prettyName>Content description (Not applicable for "No content" type)</prettyName>
+        <restricted>0</restricted>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </contentDescription>
+      <contentJavaType>
+        <cache>0</cache>
+        <defaultValue>Unknown</defaultValue>
+        <disabled>0</disabled>
+        <displayType>input</displayType>
+        <freeText>allowed</freeText>
+        <largeStorage>1</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>contentJavaType</name>
+        <number>8</number>
+        <picker>1</picker>
+        <prettyName>Macro content type</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator>|</separator>
+        <separators>|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>Unknown|Wiki</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </contentJavaType>
+      <contentType>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>contentType</name>
+        <number>7</number>
+        <prettyName>Macro content availability</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator>|</separator>
+        <separators>|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>Optional|Mandatory|No content</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </contentType>
+      <defaultCategories>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>input</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>1</multiSelect>
+        <name>defaultCategories</name>
+        <number>4</number>
+        <prettyName>Default categories</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values/>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </defaultCategories>
+      <description>
+        <contenttype>PureText</contenttype>
+        <disabled>0</disabled>
+        <editor>PureText</editor>
+        <name>description</name>
+        <number>3</number>
+        <prettyName>Macro description</prettyName>
+        <restricted>0</restricted>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <id>
+        <disabled>0</disabled>
+        <name>id</name>
+        <number>1</number>
+        <prettyName>Macro id</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </id>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>2</number>
+        <prettyName>Macro name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <priority>
+        <disabled>0</disabled>
+        <name>priority</name>
+        <number>11</number>
+        <numberType>integer</numberType>
+        <prettyName>Priority</prettyName>
+        <size>10</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.NumberClass</classType>
+      </priority>
+      <supportsInlineMode>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>supportsInlineMode</name>
+        <number>5</number>
+        <prettyName>Supports inline mode</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </supportsInlineMode>
+      <visibility>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>visibility</name>
+        <number>6</number>
+        <prettyName>Macro visibility</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator>|</separator>
+        <separators>|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>Current User|Current Wiki|Global</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </visibility>
+    </class>
+    <property>
+      <async_cached>0</async_cached>
+    </property>
+    <property>
+      <async_context/>
+    </property>
+    <property>
+      <async_enabled>0</async_enabled>
+    </property>
+    <property>
+      <code>{{velocity}}
+#set ($discard = $xwiki.ssx.use($wikimacro.doc.fullName))
+#set ($discard = $xwiki.jsx.use($wikimacro.doc.fullName))
+#set ($searchGridId = $wikimacro.parameters.id)
+#if ("$!searchGridId" == '')
+  #set ($searchGridId = $util.generateRandomString(5).toLowerCase())
+#end
+##set ($query = "$!wikimacro.parameters.query")
+#set ($queryConfig = {})
+## TODO: see also LiveDataMacroConfiguration#getSourceParameters
+##if ("$!wikimacro.parameters.query" == '')
+#set ($className = "$!wikimacro.parameters['class']")
+#set ($query = "f_class=$className")
+#set ($showHidden = "$!wikimacro.parameters.showHidden")
+#if ($showHidden == 'false')
+  #set ($query = "$query&amp;hidden=false")
+#end
+#set ($filter = "$!wikimacro.parameters.filter")
+#if ($filter != '')
+  #set ($query = "$query&amp;$filter")
+#end
+#set ($facets = [])
+#if ($wikimacro.parameters.facets != $NULL)
+  #set ($documentProperties = ['author', 'creationdate', 'creator', 'date', 'hidden', 'locale', 'type', 'wiki'])
+  #foreach ($facet in $wikimacro.parameters.facets)
+    ## Facet can be declared either on the current class or on distinct classes
+    #set ($idx = $facet.indexOf('.'))
+    #if ($documentProperties.indexOf($facet) &lt; 0 &amp;&amp; $idx &lt; 0)
+      #set ($discard = $facets.add("${className}.$facet"))
+    #else
+      #set ($discard = $facets.add($facet))
+    #end
+  #end
+#end
+## TODO: check if passing "searchGridId" is really needed
+#set ($limit = "$!wikimacro.parameters.limit")
+#set ($sort = "$!wikimacro.parameters.sort")
+#set ($sort = $sort.split(':'))
+#set ($sortProperty = $sort.get(0))
+## TODO: see which other properties need to be suffixed by "sort"
+#set ($propTypeMap = {
+  'DBListClass': 'String',
+  'DateClass': 'Date',
+  'UsersClass': 'String',
+  'StringClass': 'String',
+  'StaticListClass': 'String'
+})
+#if ($sortProperty == 'title')
+  #set ($sortProperty = "${sortProperty}_sort")
+#elseif ($sortProperty.indexOf('.') &lt; 0)
+  #set ($class = $xwiki.getClass($className))
+  #set ($property = $class.get($sortProperty))
+  #set ($type = $propTypeMap[$property.type])
+  #set ($sortProperty = "property.${className}.${sortProperty}_sort${type}")
+#end
+#set ($wikiId = $services.wiki.getCurrentWikiDescriptor().getId())
+#set ($query = "$query&amp;sort=$sortProperty&amp;sortOrder=${sort.get(1)}&amp;f_wiki=$wikiId&amp;rows=$limit&amp;r=1&amp;f_type=DOCUMENT&amp;text=*")
+#set ($query = "${query}&amp;searchGridId=${searchGridId}")
+#set ($dataActivate = '')
+#set ($activate = $wikimacro.parameters.activate)
+#if ($activate != $NULL)
+  #set ($dataActivate = " data-activate=""$services.rendering.escape($activate, 'xwiki/2.1')""")
+#end
+(% id="$searchGridId" class="searchgrid"
+  data-facets="$stringtool.join($facets, ',')"
+  data-query="$query"
+  data-columns="$!wikimacro.parameters.columns"
+  data-cols="$!wikimacro.parameters.cols"
+  aria-busy="false"$dataActivate %)(((
+    {{spinner top="10rem"/}}
+    (% class="search-ui" %)((()))
+)))
+{{/velocity}}</code>
+    </property>
+    <property>
+      <contentDescription/>
+    </property>
+    <property>
+      <contentJavaType/>
+    </property>
+    <property>
+      <contentType>No content</contentType>
+    </property>
+    <property>
+      <defaultCategories/>
+    </property>
+    <property>
+      <description/>
+    </property>
+    <property>
+      <id>searchGrid</id>
+    </property>
+    <property>
+      <name>searchGrid</name>
+    </property>
+    <property>
+      <priority/>
+    </property>
+    <property>
+      <supportsInlineMode>1</supportsInlineMode>
+    </property>
+    <property>
+      <visibility>Current Wiki</visibility>
+    </property>
+  </object>
+  <object>
+    <name>XWiki.SearchGrid.SearchGridMacro</name>
+    <number>1</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>50c36e34-f07c-45cf-ad1f-ea23dc57a812</guid>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultValue>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <restricted>0</restricted>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </mandatory>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <type>
+        <disabled>0</disabled>
+        <name>type</name>
+        <number>5</number>
+        <prettyName>Parameter type</prettyName>
+        <size>60</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </type>
+    </class>
+    <property>
+      <defaultValue>title:asc</defaultValue>
+    </property>
+    <property>
+      <description/>
+    </property>
+    <property>
+      <mandatory>0</mandatory>
+    </property>
+    <property>
+      <name>sort</name>
+    </property>
+    <property>
+      <type>java.lang.String</type>
+    </property>
+  </object>
+  <object>
+    <name>XWiki.SearchGrid.SearchGridMacro</name>
+    <number>2</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>e0ec0a2f-95f0-46ba-bb83-97324a342b42</guid>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultValue>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <restricted>0</restricted>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </mandatory>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <type>
+        <disabled>0</disabled>
+        <name>type</name>
+        <number>5</number>
+        <prettyName>Parameter type</prettyName>
+        <size>60</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </type>
+    </class>
+    <property>
+      <defaultValue/>
+    </property>
+    <property>
+      <description/>
+    </property>
+    <property>
+      <mandatory/>
+    </property>
+    <property>
+      <name>facets</name>
+    </property>
+    <property>
+      <type>java.util.List</type>
+    </property>
+  </object>
+  <object>
+    <name>XWiki.SearchGrid.SearchGridMacro</name>
+    <number>3</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>2ae63b99-8393-40f6-b302-1292ca5b5c9e</guid>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultValue>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <restricted>0</restricted>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </mandatory>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <type>
+        <disabled>0</disabled>
+        <name>type</name>
+        <number>5</number>
+        <prettyName>Parameter type</prettyName>
+        <size>60</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </type>
+    </class>
+    <property>
+      <defaultValue>false</defaultValue>
+    </property>
+    <property>
+      <description/>
+    </property>
+    <property>
+      <mandatory>0</mandatory>
+    </property>
+    <property>
+      <name>showHidden</name>
+    </property>
+    <property>
+      <type>java.lang.Boolean</type>
+    </property>
+  </object>
+  <object>
+    <name>XWiki.SearchGrid.SearchGridMacro</name>
+    <number>4</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>6bbead3a-9b62-4d38-9229-15384652917d</guid>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultValue>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <restricted>0</restricted>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </mandatory>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <type>
+        <disabled>0</disabled>
+        <name>type</name>
+        <number>5</number>
+        <prettyName>Parameter type</prettyName>
+        <size>60</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </type>
+    </class>
+    <property>
+      <defaultValue/>
+    </property>
+    <property>
+      <description/>
+    </property>
+    <property>
+      <mandatory>0</mandatory>
+    </property>
+    <property>
+      <name>class</name>
+    </property>
+    <property>
+      <type>java.lang.String</type>
+    </property>
+  </object>
+</xwikidoc>
