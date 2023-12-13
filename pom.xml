@@ -29,7 +29,6 @@
   </parent>
   
   <packaging>xar</packaging>
-  <groupId>org.xwiki.contrib.searchgrid</groupId>
   <artifactId>searchgrid</artifactId>
   <name>SearchGrid</name>
   <description>Performs a Solr search and displays results in a grid with facets on top</description>

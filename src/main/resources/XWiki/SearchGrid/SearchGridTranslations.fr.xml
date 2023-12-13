@@ -20,32 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc version="1.5" reference="XWiki.SearchGrid.PageListFacet" locale="">
+<xwikidoc version="1.5" reference="XWiki.SearchGrid.SearchGridTranslations" locale="fr">
   <web>XWiki.SearchGrid</web>
-  <name>PageListFacet</name>
-  <language/>
-  <defaultLanguage/>
-  <translation>0</translation>
+  <name>SearchGridTranslations</name>
+  <language>fr</language>
+  <defaultLanguage>en</defaultLanguage>
+  <translation>1</translation>
   <creator>xwiki:XWiki.Admin</creator>
   <parent>WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <version>1.1</version>
-  <title>PageListFacet</title>
+  <title>SolrLiveTableMacroTranslations</title>
   <comment/>
   <minorEdit>false</minorEdit>
-  <syntaxId>xwiki/2.1</syntaxId>
+  <syntaxId>plain/1.0</syntaxId>
   <hidden>true</hidden>
-  <content>{{velocity}}
-#macro (displaySearchFacetValue_list $value)
- #set ($valueDoc = $xwiki.getDocument($value))
- #set ($prettyValue = $valueDoc.displayTitle)
- $prettyValue
-#end
-#if ($facetValues)
-  {{html clean="false"}}
-    #displaySearchFacetValuesLimited($facetValues {} 'displaySearchFacetValue_list')
-  {{/html}}
-#end
-{{/velocity}}</content>
+  <content>rendering.macro.solrLiveTable.name=Solr Livetable
+rendering.macro.solrLiveTable.description=LiveTable Solr affichant des facettes
+rendering.macro.solrLiveTable.parameter.query.name=Requête
+rendering.macro.solrLiveTable.parameter.query.description=LiveTable Solr
+
+solrLiveTable.sortBy=Trier par
+solrLiveTable.textSearch.title=Rechercher
+
+</content>
 </xwikidoc>

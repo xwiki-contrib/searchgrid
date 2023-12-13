@@ -462,7 +462,7 @@
   #set ($results = $searchResponse.results)
   #set ($columnCountCss = ' searchgrid-grid-three-cols')
   #set ($numbers = {'1': 'one', '2': 'two', '3': 'three', '4': 'four', '5': 'five'})
-  #set ($documentProperties = ['author', 'creationdate', 'creator', 'date', 'hidden', 'locale', 'title', 'type', 'wiki'])
+  #set ($documentProperties = ['author', 'creationdate', 'creator', 'date', 'hidden', 'locale', 'space_facet', 'title', 'type', 'wiki'])
   #if ("$!request.columns" != '')
     #set ($columnCountCss = ' searchgrid-grid-one-col')
   #elseif ("$!request.cols" != '')

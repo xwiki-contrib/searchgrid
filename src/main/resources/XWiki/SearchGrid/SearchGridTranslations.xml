@@ -48,7 +48,14 @@ searchGrid.doc.author=Author
 searchGrid.doc.creator=Creator
 searchGrid.doc.date=Last Update
 searchGrid.doc.hidden=Hidden
-searchGrid.doc.title=Title</content>
+searchGrid.doc.title=Title
+
+rendering.macro.searchGridCell.name=Search Grid Cell
+rendering.macro.searchGridCell.description=Controls the display of a cell in a Search Grid
+
+rendering.macro.searchGridTabs.name=Search Grid Tabs
+rendering.macro.searchGridTabs.description=Displays several Search Grids in tabs
+</content>
   <object>
     <name>XWiki.SearchGrid.SearchGridTranslations</name>
     <number>0</number>

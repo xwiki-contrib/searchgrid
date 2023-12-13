@@ -171,7 +171,6 @@
         margin-left: 0.5rem;
         .badge {
           border-radius: 4px;
-          font-size: 0.7rem;
           font-weight: inherit;
           padding: 5px 8px;
         }

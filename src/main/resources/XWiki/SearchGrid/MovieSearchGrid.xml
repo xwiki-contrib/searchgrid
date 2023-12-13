@@ -20,32 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc version="1.5" reference="XWiki.SearchGrid.PageListFacet" locale="">
+<xwikidoc version="1.5" reference="XWiki.SearchGrid.MovieSearchGrid" locale="">
   <web>XWiki.SearchGrid</web>
-  <name>PageListFacet</name>
+  <name>MovieSearchGrid</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
-  <parent>WebHome</parent>
+  <parent>XWiki.SearchGrid.WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <version>1.1</version>
-  <title>PageListFacet</title>
+  <title>MovieSearchGrid</title>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
-  <content>{{velocity}}
-#macro (displaySearchFacetValue_list $value)
- #set ($valueDoc = $xwiki.getDocument($value))
- #set ($prettyValue = $valueDoc.displayTitle)
- $prettyValue
-#end
-#if ($facetValues)
-  {{html clean="false"}}
-    #displaySearchFacetValuesLimited($facetValues {} 'displaySearchFacetValue_list')
-  {{/html}}
-#end
-{{/velocity}}</content>
+  <content>= Grid Layout =
+
+{{searchGrid class="Help.Applications.Movies.Code.MoviesClass" showHidden="false" sort="title:asc" facets="databaseList1,staticList1"/}}
+
+= Table Layout =
+
+{{searchGrid id="movies" class="Help.Applications.Movies.Code.MoviesClass" showHidden="false"
+    facets="databaseList1,staticList1"
+    columns="title,longText1,databaseList1,staticList1,date" limit="30"/}}</content>
 </xwikidoc>

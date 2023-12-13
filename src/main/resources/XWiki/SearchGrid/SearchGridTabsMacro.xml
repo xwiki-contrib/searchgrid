@@ -36,30 +36,25 @@
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
-  <content>* TODO: check it works with several macros in the same page
+  <content>= Usage =
 
-{{velocity}}
+{{code language="text"}}
 {{searchGridTabs}}
 [
   {
-    "label": "Politics",
-    "class": "XWiki.Article.ArticleClass",
-    "filter": "f_property.XWiki.Topic.TopicsClass.list_string=topics.politics.WebHome",
-    "facets": ["XWiki.Topic.TopicsClass.list", "XWiki.Category.CategoriesClass.list"]
+    "label": "Movies",
+    "class": "Help.Applications.Movies.Code.MoviesClass",
+    "facets": ["databaseList1", "staticList1"]
   },
   {
-    "label": "Environment",
-    "class": "XWiki.Article.ArticleClass",
-    "facets": ["XWiki.Topic.TopicsClass.list", "XWiki.Category.CategoriesClass.list"]
-  },
-  {
-    "label": "Society",
-    "class": "XWiki.Article.ArticleClass",
-    "facets": ["XWiki.Topic.TopicsClass.list", "XWiki.Category.CategoriesClass.list"]
+    "label": "Movies",
+    "class": "Help.Applications.Movies.Code.MoviesClass",
+    "filter": "f_property.Help.Applications.Movies.Code.MoviesClass.staticList1_string=drama",
+    "facets": ["databaseList1", "staticList1"]
   }
 ]
 {{/searchGridTabs}}
-{{/velocity}}
+{{/code}}
 </content>
   <object>
     <name>XWiki.SearchGrid.SearchGridTabsMacro</name>
@@ -492,7 +487,9 @@ def discard; /** It seems the Groovy macro prints the last variable in case ther
       <contentType>Optional</contentType>
     </property>
     <property>
-      <defaultCategories/>
+      <defaultCategories>
+        <value>Content</value>
+      </defaultCategories>
     </property>
     <property>
       <description/>
@@ -501,7 +498,7 @@ def discard; /** It seems the Groovy macro prints the last variable in case ther
       <id>searchGridTabs</id>
     </property>
     <property>
-      <name>searchGridTabs</name>
+      <name>Search Grid Tabs</name>
     </property>
     <property>
       <priority/>

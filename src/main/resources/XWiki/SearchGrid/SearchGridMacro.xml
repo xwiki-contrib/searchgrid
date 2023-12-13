@@ -36,7 +36,42 @@
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
-  <content/>
+  <content>= Macro Parameters =
+
+{{velocity}}
+#set ($parameters = $doc.getObjects('XWiki.WikiMacroParameterClass'))
+|=Name|=Description|=Mandatory|=Default value
+#foreach ($parameter in $parameters)
+#set ($mandatory = $parameter.getValue('mandatory') == 1)
+#if ($mandatory)
+  #set ($mandatory = 'yes')
+#else
+  #set ($mandatory = 'no')
+#end
+|$parameter.getValue('name')|$parameter.getValue('description')|$mandatory|$parameter.getValue('defaultValue')
+#end
+{{/velocity}}
+
+= Usage =
+
+== Grid layout ==
+
+{{code language="text"}}
+{{searchGrid class="Help.Applications.Movies.Code.MoviesClass" showHidden="false" sort="title:asc" facets="databaseList1,staticList1"/}}
+{{/code}}
+
+The display of the cells within the grid can be customized by creating an UIX for the UIXP ##org.xwiki.contrib.searchgrid.cell##. An example is given in page ##MovieSearchGridCell## for displaying Movies in a custom way.
+
+== Table layout ==
+
+{{code language="text"}}
+{{searchGrid id="movies" class="Help.Applications.Movies.Code.MoviesClass" showHidden="false"
+    facets="databaseList1,staticList1"
+    columns="title,longText1,databaseList1,staticList1,date" limit="30"/}}
+{{/code}}
+
+
+ </content>
   <object>
     <name>XWiki.SearchGrid.SearchGridMacro</name>
     <number>0</number>
@@ -898,7 +933,7 @@ require(['jquery', 'bootstrap'], function($) {
 #end
 #set ($facets = [])
 #if ($wikimacro.parameters.facets != $NULL)
-  #set ($documentProperties = ['author', 'creationdate', 'creator', 'date', 'hidden', 'locale', 'type', 'wiki'])
+  #set ($documentProperties = ['author', 'creationdate', 'creator', 'date', 'hidden', 'locale', 'space_facet', 'type', 'wiki'])
   #foreach ($facet in $wikimacro.parameters.facets)
     ## Facet can be declared either on the current class or on distinct classes
     #set ($idx = $facet.indexOf('.'))
@@ -959,7 +994,9 @@ require(['jquery', 'bootstrap'], function($) {
       <contentType>No content</contentType>
     </property>
     <property>
-      <defaultCategories/>
+      <defaultCategories>
+        <value>Content</value>
+      </defaultCategories>
     </property>
     <property>
       <description/>
@@ -968,7 +1005,7 @@ require(['jquery', 'bootstrap'], function($) {
       <id>searchGrid</id>
     </property>
     <property>
-      <name>searchGrid</name>
+      <name>Search Grid</name>
     </property>
     <property>
       <priority/>
@@ -1047,7 +1084,7 @@ require(['jquery', 'bootstrap'], function($) {
       <defaultValue>title:asc</defaultValue>
     </property>
     <property>
-      <description/>
+      <description>Field to be used for ordering the results</description>
     </property>
     <property>
       <mandatory>0</mandatory>
@@ -1126,7 +1163,7 @@ require(['jquery', 'bootstrap'], function($) {
       <defaultValue/>
     </property>
     <property>
-      <description/>
+      <description>List of facets to be displayed on top of the grid</description>
     </property>
     <property>
       <mandatory/>
@@ -1205,7 +1242,7 @@ require(['jquery', 'bootstrap'], function($) {
       <defaultValue>false</defaultValue>
     </property>
     <property>
-      <description/>
+      <description>Whether the hidden pages should be included in the results</description>
     </property>
     <property>
       <mandatory>0</mandatory>
@@ -1284,7 +1321,7 @@ require(['jquery', 'bootstrap'], function($) {
       <defaultValue/>
     </property>
     <property>
-      <description/>
+      <description>Name of the XClass whose instances are to be searched for</description>
     </property>
     <property>
       <mandatory>0</mandatory>

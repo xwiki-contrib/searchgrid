@@ -56,10 +56,12 @@
 #set ($facets = $request.getParameterValues('facets'))
 #set ($propTypeFacetMap = {
   'DBListClass': ['_string', 'XWiki.SearchGrid.PageListFacet'],
+  'PageClass': ['_string', 'XWiki.SearchGrid.PageListFacet'],
   'DateClass': ['_date', 'XWiki.SearchGrid.SolrDateFacet'],
   'UsersClass': ['_string', 'XWiki.SearchGrid.SolrUserFacet'],
   'StringClass': ['_string', 'XWiki.SearchGrid.PageListFacet'],
   'StaticListClass': ['_string', 'XWiki.SearchGrid.PageListFacet'],
+  'space_facet': ['', 'Main.SolrSpaceFacet'],
   'creator': ['', 'XWiki.SearchGrid.SolrUserFacet'],
   'hidden': ['', 'XWiki.SearchGrid.SolrHiddenFacet']
 })
@@ -69,6 +71,9 @@
     #set ($className = $facet.substring(0, $idx))
     #set ($propertyName = $facet.substring($mathtool.add($idx, 1)))
     #declareFacetDisplayer($className, $propertyName)
+  #elseif ($facet == 'space_facet')
+    #set ($discard = $solrConfig.facetFields.add($facet))
+    #set ($solrConfig.facetDisplayers[$facet] = $propTypeFacetMap[$facet].get(1))
   #elseif ($facet == 'creator')
     #set ($discard = $solrConfig.facetFields.add($facet))
     #set ($solrConfig.facetDisplayers[$facet] = $propTypeFacetMap[$facet].get(1))

@@ -156,7 +156,6 @@
     .searchgrid-grid-cell-column {
       flex: 1 1 150px;
       margin-right: 1rem;
-      font-size: 0.9rem;
     }
   }
 }
@@ -452,6 +451,8 @@
     #end
   #else
     #set ($obj = $page.getObject($className))
+    #set ($separator = '')
+    ##set ($separator = ':::')
     #foreach ($propertyName in $columns)
       (% class="searchgrid-grid-cell-column searchgrid-grid-cell-column-$propertyName" %)(((
         #if ($documentProperties.indexOf($propertyName) &gt;= 0)
@@ -479,9 +480,13 @@
             #set ($propObjClassProp = $propObjClass.get($propertyName))
             Type: $propObjClassProp.type
             *#
-            $page.display($propertyName, $propObj)
+            ## We wrap in a group to avoid empty lines in case of static list empty value, no idea why this is needed
+            (((
+              $page.display($propertyName, $propObj)
+            )))
           #end
         #end
+        $separator
       )))
     #end
   #end
@@ -498,7 +503,9 @@
       <contentType>No content</contentType>
     </property>
     <property>
-      <defaultCategories/>
+      <defaultCategories>
+        <value>Hidden</value>
+      </defaultCategories>
     </property>
     <property>
       <description/>
