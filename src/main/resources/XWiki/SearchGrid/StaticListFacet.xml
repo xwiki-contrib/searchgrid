@@ -20,29 +20,35 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc version="1.5" reference="XWiki.SearchGrid.MovieSearchGrid" locale="">
+<xwikidoc version="1.5" reference="XWiki.SearchGrid.StaticListFacet" locale="">
   <web>XWiki.SearchGrid</web>
-  <name>MovieSearchGrid</name>
+  <name>StaticListFacet</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
-  <parent>XWiki.SearchGrid.WebHome</parent>
+  <parent>Main.WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <version>1.1</version>
-  <title>MovieSearchGrid</title>
+  <title>StaticListFacet</title>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
-  <content>= Grid Layout =
-
-{{searchGrid class="Help.Applications.Movies.Code.MoviesClass" showHidden="false" sort="title:asc" facets="databaseList1,staticList1" cols="2"/}}
-
-= Table Layout =
-
-{{searchGrid id="movies" class="Help.Applications.Movies.Code.MoviesClass" showHidden="false"
-    facets="databaseList1,staticList1"
-    columns="title,longText1,databaseList1,staticList1,date" limit="30"/}}</content>
+  <content>{{velocity}}
+#macro (displaySearchFacetValue_list $value)
+$services.localization.render("${propName}_$value")
+#end
+#if ($facetValues)
+ #set ($property = 'property.')
+ #set ($length = $property.length())
+ #set ($idx = $facetField.name.lastIndexOf('_string'))
+ #set ($propName = $facetField.name.substring($length, $idx))
+ #set ($propName = $propName.replaceAll('Class\.(.*)$', 'Class_$1'))
+ {{html}}
+    #displaySearchFacetValuesLimited($facetValues {} 'displaySearchFacetValue_list')
+  {{/html}}
+#end
+{{/velocity}}</content>
 </xwikidoc>

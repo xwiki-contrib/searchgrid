@@ -39,23 +39,38 @@
   <content>= Usage =
 
 {{code language="text"}}
-{{searchGridTabs}}
+{{searchGridTabs showHidden="false"}}
 [
   {
     "label": "Movies",
     "class": "Help.Applications.Movies.Code.MoviesClass",
-    "facets": ["databaseList1", "staticList1"]
+    "facets": "databaseList1,staticList1"
   },
   {
     "label": "Drama",
     "class": "Help.Applications.Movies.Code.MoviesClass",
     "filter": "f_property.Help.Applications.Movies.Code.MoviesClass.staticList1_string=drama",
-    "facets": ["databaseList1", "staticList1"]
+    "facets": "databaseList1,staticList1"
   }
 ]
 {{/searchGridTabs}}
 {{/code}}
-</content>
+
+{{searchGridTabs showHidden="false"}}
+[
+  {
+    "label": "Movies",
+    "class": "Help.Applications.Movies.Code.MoviesClass",
+    "facets": "databaseList1, staticList1"
+  },
+  {
+    "label": "Drama",
+    "class": "Help.Applications.Movies.Code.MoviesClass",
+    "filter": "f_property.Help.Applications.Movies.Code.MoviesClass.staticList1_string=drama",
+    "facets": "databaseList1, staticList1"
+  }
+]
+{{/searchGridTabs}}</content>
   <object>
     <name>XWiki.SearchGrid.SearchGridTabsMacro</name>
     <number>0</number>
@@ -428,6 +443,8 @@ def discard; /** It seems the Groovy macro prints the last variable in case ther
 
 {{velocity}}
 #set ($searchGridId = $xwiki.generateRandomString(5))
+#set ($showHidden = "$!wikimacro.parameters.showHidden")
+#set ($limit = "$!wikimacro.parameters.limit")
 {{html clean="false"}}
 &lt;ul class="nav nav-tabs searchgrid-tabs" role="tablist"&gt;
   #foreach ($tab in $tabs)
@@ -437,7 +454,6 @@ def discard; /** It seems the Groovy macro prints the last variable in case ther
       ## with special characters in the URL. Or check the escapes
       ## href="#$query.replaceAll('=', '--eq--').replaceAll('&amp;', '--and--').replaceAll('/', '--slash--').replaceAll("\*", '--star--')"
       ## TODO: factorize code with SolrLiveTableMacro
-      #set ($limit = "$!tab.limit")
       #set ($sort = "$!tab.sort")
       #if ($sort == '')
         #set ($sort = 'title:asc')
@@ -450,18 +466,36 @@ def discard; /** It seems the Groovy macro prints the last variable in case ther
         #set ($sortProperty = "${sortProperty}_sort")
       #end
       ## TODO: check if searchId parameter is needed
-      #set ($query = "f_class=${tab['class']}&amp;f_type=DOCUMENT&amp;text=*&amp;f_wiki=$wikiId")
+      #set ($className = $tab['class'])
+      #set ($query = "f_class=$className&amp;f_type=DOCUMENT&amp;text=*&amp;f_wiki=$wikiId")
       #set ($filter = "$!tab.filter")
       #if ($filter != '')
         #set ($query = "$query&amp;$filter")
       #end
-      #set ($query = "$query&amp;sort=$sortProperty&amp;sortOrder=${sort.get(1)}rows=$limit&amp;r=1&amp;searchId=${searchGridTabsId}&amp;tab=$tabId")
+      ## TODO: this code is the same as the one SearchGridMacro, see how to declare it just once
+      #set ($facets = [])
+      #if ("$!tab.facets" != '')
+        #set ($documentProperties = ['author', 'creationdate', 'creator', 'date', 'hidden', 'locale', 'space_facet', 'type', 'wiki'])
+        #foreach ($facet in $tab.facets.split(','))
+          ## Facet can be declared either on the current class or on distinct classes
+          #set ($idx = $facet.indexOf('.'))
+          #if ($documentProperties.indexOf($facet) &lt; 0 &amp;&amp; $idx &lt; 0 &amp;&amp; "$!className" != '')
+            #set ($discard = $facets.add("${className}.${facet.trim()}"))
+          #else
+            #set ($discard = $facets.add($facet))
+          #end
+        #end
+      #end
+      #set ($query = "$query&amp;sort=$sortProperty&amp;sortOrder=${sort.get(1)}&amp;rows=$limit&amp;r=1&amp;searchGridId=${searchGridId}&amp;tab=$tabId")
+      #if ($showHidden == 'false')
+        #set ($query = "$query&amp;hidden=false")
+      #end
       &lt;a class="search-filter"
         href="#$tabId"
         data-tab="$tabId"
         data-searchgrid-id="$searchGridId"
         data-query="$escapetool.xml($query)"
-        data-facets="$stringtool.join($tab.facets, ',')"
+        data-facets="$escapetool.xml($stringtool.join($facets, ','))"
         aria-controls="tab-pane-${searchGridId}" role="tab" data-toggle="tab"&gt;
         $escapetool.xml($tab.label)
       &lt;/a&gt;
@@ -508,6 +542,186 @@ def discard; /** It seems the Groovy macro prints the last variable in case ther
     </property>
     <property>
       <visibility>Current Wiki</visibility>
+    </property>
+  </object>
+  <object>
+    <name>XWiki.SearchGrid.SearchGridTabsMacro</name>
+    <number>0</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>869edb50-9c5a-4751-a676-e40c5ee55549</guid>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultValue>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <restricted>0</restricted>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </mandatory>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <type>
+        <cache>0</cache>
+        <defaultValue>Unknown</defaultValue>
+        <disabled>0</disabled>
+        <displayType>input</displayType>
+        <freeText>allowed</freeText>
+        <largeStorage>1</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>type</name>
+        <number>5</number>
+        <picker>1</picker>
+        <prettyName>Parameter type</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator>|</separator>
+        <separators>|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>Unknown|Wiki</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </type>
+    </class>
+    <property>
+      <defaultValue/>
+    </property>
+    <property>
+      <description/>
+    </property>
+    <property>
+      <mandatory>0</mandatory>
+    </property>
+    <property>
+      <name>showHidden</name>
+    </property>
+    <property>
+      <type>java.lang.Boolean</type>
+    </property>
+  </object>
+  <object>
+    <name>XWiki.SearchGrid.SearchGridTabsMacro</name>
+    <number>1</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>4710f05f-47c6-4125-8dc0-b65cf685e0a6</guid>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultValue>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <restricted>0</restricted>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </mandatory>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <type>
+        <cache>0</cache>
+        <defaultValue>Unknown</defaultValue>
+        <disabled>0</disabled>
+        <displayType>input</displayType>
+        <freeText>allowed</freeText>
+        <largeStorage>1</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>type</name>
+        <number>5</number>
+        <picker>1</picker>
+        <prettyName>Parameter type</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator>|</separator>
+        <separators>|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>Unknown|Wiki</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </type>
+    </class>
+    <property>
+      <defaultValue>9</defaultValue>
+    </property>
+    <property>
+      <description/>
+    </property>
+    <property>
+      <mandatory>0</mandatory>
+    </property>
+    <property>
+      <name>limit</name>
+    </property>
+    <property>
+      <type>java.lang.Integer</type>
     </property>
   </object>
 </xwikidoc>
