@@ -331,8 +331,8 @@ require(['jquery', 'bootstrap'], function($) {
       '.pagination a',
       '.controlPagination a',
       'a.search-facets-action-reset',
-      '.search-facet a.itemName',
-      '.search-facet a.more',
+      '.search-facet-body a.itemName',
+      '.search-facet-body a.more',
       '.search-facet-body .selectedLocation a',
       '.search-form .input-group-btn'
     ].join(',')).on('click', {id: searchGridId}, reloadSearchUI);
@@ -589,7 +589,7 @@ require(['jquery', 'bootstrap'], function($) {
         .btn-group {
           margin: 0;
         }
-        .search-facet {
+        .search-facet-body {
           display: inline-block;
           border-bottom: none;
           padding: 0;
@@ -601,8 +601,13 @@ require(['jquery', 'bootstrap'], function($) {
           .search-facet-empty-value {
             display: none;
           }
-          .search-facet-item &gt; a {
+          /** ol is used in the breadcrumb of the SolrSpaceFacet */
+          .search-facet-item &gt; a, ol {
             font-size: 1.2rem;
+          }
+          /** overrides default to reduce left space */
+          .dropdown-menu &gt; li &gt; a {
+            padding: 3px 12px;
           }
         }
       }

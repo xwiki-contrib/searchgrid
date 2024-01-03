@@ -61,7 +61,7 @@
   'UsersClass': ['_string', 'XWiki.SearchGrid.SolrUserFacet'],
   'StringClass': ['_string', 'XWiki.SearchGrid.PageListFacet'],
   'StaticListClass': ['_string', 'XWiki.SearchGrid.StaticListFacet'],
-  'space_facet': ['', 'Main.SolrSpaceFacet'],
+  'space_facet': ['', 'XWiki.SearchGrid.SolrSpaceFacet'],
   'creator': ['', 'XWiki.SearchGrid.SolrUserFacet'],
   'hidden': ['', 'XWiki.SearchGrid.SolrHiddenFacet']
 })
