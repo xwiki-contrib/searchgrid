@@ -161,7 +161,7 @@
     <property>
       <code>require(['jquery', 'bootstrap'], function($) {
   'use strict';
-  $('.nav-tabs a').on('click', (e) =&gt; {
+  $('.searchgrid-tabs a').on('click', (e) =&gt; {
       e.preventDefault();
       $(this).tab('show');
     }
@@ -171,7 +171,7 @@
     (event, data) =&gt; {
       //const liveTable = $(`#${data.id}`);
       //const solrLiveTableTabsId = liveTable.parents('.solr-livetable-tabs').attr('id');
-      $(".nav-tabs &gt; li &gt; a").on("shown.bs.tab", function(e) {
+      $(".searchgrid-tabs &gt; li &gt; a").on("shown.bs.tab", function(e) {
         // Reflect the currently selected tab in the hash value without scrolling to the id
         const href = $(e.target).attr("href");
         if(history.pushState) {
@@ -200,7 +200,7 @@
       } else {
           $('.nav-tabs li:first-child a').tab('show');
       }*/
-      $('.nav-tabs li:first-child a').tab('show');
+      $('.searchgrid-tabs li:first-child a').tab('show');
     }
   );
 });</code>
@@ -445,8 +445,9 @@ def discard; /** It seems the Groovy macro prints the last variable in case ther
 #set ($searchGridId = $xwiki.generateRandomString(5))
 #set ($showHidden = "$!wikimacro.parameters.showHidden")
 #set ($limit = "$!wikimacro.parameters.limit")
+#set ($tabStyle = "nav-$!wikimacro.parameters.style")
 {{html clean="false"}}
-&lt;ul class="nav nav-tabs searchgrid-tabs" role="tablist"&gt;
+&lt;ul class="nav $tabStyle searchgrid-tabs" role="tablist"&gt;
   #foreach ($tab in $tabs)
     #set ($tabId = $foreach.index)
     &lt;li role="presentation"&gt;
@@ -722,6 +723,85 @@ def discard; /** It seems the Groovy macro prints the last variable in case ther
     </property>
     <property>
       <type>java.lang.Integer</type>
+    </property>
+  </object>
+  <object>
+    <name>XWiki.SearchGrid.SearchGridTabsMacro</name>
+    <number>2</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>ec128f0f-dac0-441b-8964-0b0f0bccae27</guid>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultValue>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <restricted>0</restricted>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </mandatory>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <type>
+        <disabled>0</disabled>
+        <name>type</name>
+        <number>5</number>
+        <prettyName>Parameter type</prettyName>
+        <size>60</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </type>
+    </class>
+    <property>
+      <defaultValue>tabs</defaultValue>
+    </property>
+    <property>
+      <description/>
+    </property>
+    <property>
+      <mandatory>0</mandatory>
+    </property>
+    <property>
+      <name>style</name>
+    </property>
+    <property>
+      <type>java.lang.String</type>
     </property>
   </object>
 </xwikidoc>
