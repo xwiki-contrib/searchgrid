@@ -36,7 +36,8 @@
   <minorEdit>false</minorEdit>
   <syntaxId>plain/1.0</syntaxId>
   <hidden>true</hidden>
-  <content>rendering.macro.searchGrid.name=Search Grid
+  <content># Search Grid 
+rendering.macro.searchGrid.name=Search Grid
 rendering.macro.searchGrid.description=Affiche les résultats d'une recherche Solr dans un tableau
 rendering.macro.searchGrid.parameter.class.name=Classe XWiki
 rendering.macro.searchGrid.parameter.class.description=Classe XWiki à utiliser pour la requête, ex : XWiki.XWikiUsers
@@ -47,33 +48,20 @@ rendering.macro.searchGrid.parameter.sort.name=Propriété à utiliser pour le t
 rendering.macro.searchGrid.parameter.sort.description=Valeur par défaut : title:asc 
 rendering.macro.searchGrid.parameter.filter.name=Filtre de recherche complémentaire
 rendering.macro.searchGrid.parameter.filter.description=Filtre de recherche complémentaire
-
-
 searchGrid.sortBy=Trier par
 searchGrid.textSearch.title=Rechercher
-
-
-searchGrid.doc.title=Titre
-searchGrid.doc.date=Dernière modification
-searchGrid.doc.creator=Créateur
-
-rendering.macro.searchGrid.description=Performs a Solr search and display results in a grid with facets on top
-rendering.macro.searchGrid.parameter.query.name=Query
-rendering.macro.searchGrid.parameter.query.description=Search query
-
-searchGrid.sortBy=Sort by
-searchGrid.textSearch.title=Search
-
 searchGrid.doc.author=Author
-searchGrid.doc.creator=Creator
-searchGrid.doc.date=Last Update
-searchGrid.doc.hidden=Hidden
-searchGrid.doc.title=Title
+searchGrid.doc.creator=Créateur
+searchGrid.doc.date=Dernière modification
+searchGrid.doc.hidden=Page cachée
+searchGrid.doc.title=Titre
 
+# SearchGridCell
 rendering.macro.searchGridCell.name=Search Grid Cell
-rendering.macro.searchGridCell.description=Controls the display of a cell in a Search Grid
+rendering.macro.searchGridCell.description=Contrôle l'affichage d'un élément d'une Search Grid
 
+# SearchGridTabs
 rendering.macro.searchGridTabs.name=Search Grid Tabs
-rendering.macro.searchGridTabs.description=Displays several Search Grids in tabs
+rendering.macro.searchGridTabs.description=Affiche plusieurs Search Grids dans des onglets
 </content>
 </xwikidoc>
