@@ -36,23 +36,31 @@
   <minorEdit>false</minorEdit>
   <syntaxId>plain/1.0</syntaxId>
   <hidden>true</hidden>
-  <content>rendering.macro.searchGrid.name=Search Grid
+  <content>## SearchGrid
+rendering.macro.searchGrid.name=Search Grid
 rendering.macro.searchGrid.description=Performs a Solr search and display results in a grid with facets on top
-rendering.macro.searchGrid.parameter.query.name=Query
-rendering.macro.searchGrid.parameter.query.description=Search query
-
+rendering.macro.searchGrid.parameter.class.name=XWiki Class
+rendering.macro.searchGrid.parameter.class.description=XWiki Class to be used for the query, i.e.: Movies.MovieClass
+rendering.macro.searchGrid.parameter.facets.name=Properties to be shown as facets
+rendering.macro.searchGrid.parameter.facets.description=Example: director,category
+rendering.macro.searchGrid.parameter.showHidden.name=Display hidden pages
+rendering.macro.searchGrid.parameter.sort.name=Property used by default to sort the results
+rendering.macro.searchGrid.parameter.sort.description=Default value: title:asc 
+rendering.macro.searchGrid.parameter.filter.name=Additional filter
+rendering.macro.searchGrid.parameter.filter.description=Filter to be added to the query
 searchGrid.sortBy=Sort by
 searchGrid.textSearch.title=Search
-
 searchGrid.doc.author=Author
 searchGrid.doc.creator=Creator
 searchGrid.doc.date=Last Update
 searchGrid.doc.hidden=Hidden
 searchGrid.doc.title=Title
 
+## SearchGridCell
 rendering.macro.searchGridCell.name=Search Grid Cell
 rendering.macro.searchGridCell.description=Controls the display of a cell in a Search Grid
 
+## SearchGridCellTabs
 rendering.macro.searchGridTabs.name=Search Grid Tabs
 rendering.macro.searchGridTabs.description=Displays several Search Grids in tabs
 </content>
