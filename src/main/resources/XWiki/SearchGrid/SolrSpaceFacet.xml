@@ -209,8 +209,10 @@
 
 .search-facet-body .breadcrumb {
   margin-bottom: 5px;
-  padding: 3px 12px;
-}</code>
+  padding: 5px 15px;
+  white-space: nowrap;
+}
+</code>
     </property>
     <property>
       <contentType>CSS</contentType>

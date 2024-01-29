@@ -677,6 +677,11 @@ require(['jquery', 'bootstrap'], function($) {
         /*&amp;:hover {
         background: #fafafa;
       }*/
+        /** This is to not display the grid columns table header in tabular mode by default, in case the search returns no result.
+         * This rule is overridden in SearchGridCell (hence when there is at least one result / cell) by a more powerful selector. */
+        &amp;.searchgrid-grid-header {
+          display: none;
+        }
       }
     }
     .paginationFilter {

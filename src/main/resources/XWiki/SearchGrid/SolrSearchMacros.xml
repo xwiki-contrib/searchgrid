@@ -457,7 +457,9 @@
   &lt;/li&gt;
 #end
 
-## Customized to display results with pagination at the bottom only with results count and no RSS link
+## Customized to 
+## * Display grid header in tabular mode
+## * Display pagination at the bottom only with results count and no RSS link
 #macro (displaySearchResults)
   #set ($results = $searchResponse.results)
   #set ($columnCountCss = ' searchgrid-grid-three-cols')
