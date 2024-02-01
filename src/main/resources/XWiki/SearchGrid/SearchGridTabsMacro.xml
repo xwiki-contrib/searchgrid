@@ -446,6 +446,15 @@ def discard; /** It seems the Groovy macro prints the last variable in case ther
 #set ($showHidden = "$!wikimacro.parameters.showHidden")
 #set ($limit = "$!wikimacro.parameters.limit")
 #set ($tabStyle = "nav-$!wikimacro.parameters.style")
+## TODO: factorize with SearchGridMacro
+## TODO: see which other properties need to be suffixed by "sort"
+#set ($propTypeMap = {
+  'DBListClass': 'String',
+  'DateClass': 'Date',
+  'UsersClass': 'String',
+  'StringClass': 'String',
+  'StaticListClass': 'String'
+})
 {{html clean="false"}}
 &lt;ul class="nav $tabStyle searchgrid-tabs" role="tablist"&gt;
   #foreach ($tab in $tabs)
@@ -454,17 +463,27 @@ def discard; /** It seems the Groovy macro prints the last variable in case ther
       ## NB: not storing the href in the tab elements for now since there is a bug in Bootstrap
       ## with special characters in the URL. Or check the escapes
       ## href="#$query.replaceAll('=', '--eq--').replaceAll('&amp;', '--and--').replaceAll('/', '--slash--').replaceAll("\*", '--star--')"
-      ## TODO: factorize code with SolrLiveTableMacro
+      ## TODO: factorize sort code with SearchGridMacro
       #set ($sort = "$!tab.sort")
       #if ($sort == '')
         #set ($sort = 'title:asc')
       #end
       #set ($sort = $sort.split(':'))
       #set ($sortProperty = $sort.get(0))
+      #set ($sortOrder = $sort.get(1))
       #set ($wikiId = $services.wiki.getCurrentWikiDescriptor().getId())
-      ## TODO: see which other properties need to be suffixed by "sort"
       #if ($sortProperty == 'title')
         #set ($sortProperty = "${sortProperty}_sort")
+      #else
+        #set ($idx = $sortProperty.lastIndexOf('.'))
+        #if ($idx &gt; 0)
+          #set ($className = $sortProperty.substring(0, $idx))
+          #set ($class = $xwiki.getClass($className))
+          #set ($sortProperty = $sortProperty.substring($mathtool.add($idx, 1)))
+          #set ($property = $class.get($sortProperty))
+          #set ($type = $propTypeMap[$property.type])
+          #set ($sortProperty = "property.${className}.${sortProperty}_sort${type}")
+        #end
       #end
       ## TODO: check if searchId parameter is needed
       #set ($className = $tab['class'])
@@ -487,7 +506,7 @@ def discard; /** It seems the Groovy macro prints the last variable in case ther
           #end
         #end
       #end
-      #set ($query = "$query&amp;sort=$sortProperty&amp;sortOrder=${sort.get(1)}&amp;rows=$limit&amp;r=1&amp;searchGridId=${searchGridId}&amp;tab=$tabId")
+      #set ($query = "$query&amp;sort=$sortProperty&amp;sortOrder=$sortOrder&amp;rows=$limit&amp;r=1&amp;searchGridId=${searchGridId}&amp;tab=$tabId")
       #if ($showHidden == 'false')
         #set ($query = "$query&amp;hidden=false")
       #end

@@ -959,7 +959,8 @@ require(['jquery', 'bootstrap'], function($) {
 #set ($sort = "$!wikimacro.parameters.sort")
 #set ($sort = $sort.split(':'))
 #set ($sortProperty = $sort.get(0))
-## TODO: see which other properties need to be suffixed by "sort"
+#set ($sortOrder = $sort.get(1))
+## TODO: see which other properties need to be suffixed for "sort"
 #set ($propTypeMap = {
   'DBListClass': 'String',
   'DateClass': 'Date',
@@ -976,7 +977,7 @@ require(['jquery', 'bootstrap'], function($) {
   #set ($sortProperty = "property.${className}.${sortProperty}_sort${type}")
 #end
 #set ($wikiId = $services.wiki.getCurrentWikiDescriptor().getId())
-#set ($query = "$query&amp;sort=$sortProperty&amp;sortOrder=${sort.get(1)}&amp;f_wiki=$wikiId&amp;rows=$limit&amp;r=1&amp;f_type=DOCUMENT&amp;text=*")
+#set ($query = "$query&amp;sort=$sortProperty&amp;sortOrder=$sortOrder&amp;f_wiki=$wikiId&amp;rows=$limit&amp;r=1&amp;f_type=DOCUMENT&amp;text=*")
 #set ($query = "${query}&amp;searchGridId=${searchGridId}")
 #set ($dataActivate = '')
 #set ($activate = $wikimacro.parameters.activate)
@@ -1105,7 +1106,7 @@ require(['jquery', 'bootstrap'], function($) {
       <defaultValue>title:asc</defaultValue>
     </property>
     <property>
-      <description>Field to be used for ordering the results</description>
+      <description>Field and order to be used for ordering the results. Example: {{code language="text"}}Movies.Code.MoviesClass.staticList1:asc{{/code}}</description>
     </property>
     <property>
       <mandatory>0</mandatory>
