@@ -602,9 +602,9 @@ require(['jquery', 'bootstrap'], function($) {
             display: none;
           }
           /** ol is used in the breadcrumb of the SolrSpaceFacet */
-          .search-facet-item &gt; a, ol {
+          /** .search-facet-item &gt; a, ol {
             font-size: 1.2rem;
-          }
+          } */
           /** overrides default to reduce left space */
           .dropdown-menu &gt; li &gt; a {
             padding: 3px 12px;
