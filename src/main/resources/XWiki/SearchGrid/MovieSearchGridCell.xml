@@ -325,10 +325,10 @@
 #set ($page = $xwiki.getDocument($reference))
 #set ($xclass = 'Help.Applications.Movies.Code.MoviesClass')
 #set ($obj = $page.getObject($xclass))
-#set ($discard = $xwiki.ssx.use($uix.doc.fullName))
 #if ($obj == $NULL)
   #stop()
 #end
+#set ($discard = $xwiki.ssx.use($uix.doc.fullName))
 ## TODO: this should be the main image
 (% class="searchgrid-grid-cell-image" %)(((
   {{html clean="false" wiki="true"}}
