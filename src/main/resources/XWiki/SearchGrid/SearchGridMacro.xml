@@ -580,8 +580,9 @@ require(['jquery', 'bootstrap'], function($) {
     min-height: 200px; /** Needed for the spinner to show up during the first loading where there is no content in the tab yet. */
     .searchgrid-toolbar {
       display: grid;
-      grid-template-areas: "facets input sort";
-      grid-template-columns: auto 1fr .1fr;
+      grid-template-areas: "facets sort"
+        "input input";
+      grid-template-columns: 10fr 1fr;
       margin-bottom: 0.6rem;
       .search-facets {
         grid-area: facets;
@@ -659,14 +660,6 @@ require(['jquery', 'bootstrap'], function($) {
         }
       }
 
-      &amp;.searchgrid-grid-two-cols {
-        grid-template-columns: 1fr 1fr;
-      }
-
-      &amp;.searchgrid-grid-three-cols {
-        grid-template-columns: 1fr 1fr 1fr;
-      }
-
       .searchgrid-grid-cell {
         transition: background-color .2s ease,border-color .2s ease;
         height: 100%;
@@ -690,7 +683,25 @@ require(['jquery', 'bootstrap'], function($) {
   }
 }
 
-</code>
+@media (min-width: @screen-md-min) {
+  .searchgrid {
+    .search-ui {
+      .searchgrid-toolbar {
+        grid-template-areas: "facets input sort";
+        grid-template-columns: auto 1fr .1fr;
+      }
+      .searchgrid-grid {
+        &amp;.searchgrid-grid-two-cols {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        &amp;.searchgrid-grid-three-cols {
+          grid-template-columns: 1fr 1fr 1fr;
+        }
+      }
+    }
+  }
+}</code>
     </property>
     <property>
       <contentType>LESS</contentType>
