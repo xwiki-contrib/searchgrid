@@ -20,14 +20,14 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc version="1.5" reference="XWiki.Spinner.spinnermacrotranslations" locale="">
+<xwikidoc version="1.5" reference="XWiki.Spinner.SpinnerMacroTranslations" locale="">
   <web>XWiki.Spinner</web>
-  <name>spinnermacrotranslations</name>
+  <name>SpinnerMacroTranslations</name>
   <language/>
-  <defaultLanguage/>
+  <defaultLanguage>en</defaultLanguage>
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
-  <parent>XWiki.Spinner.WebHome</parent>
+  <parent>WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <version>1.1</version>
@@ -50,7 +50,7 @@ rendering.macro.spinner.parameter.left.name=Left
 rendering.macro.spinner.parameter.left.description=Position of the spinner relatively to the left of its container
 </content>
   <object>
-    <name>XWiki.Spinner.spinnermacrotranslations</name>
+    <name>XWiki.Spinner.SpinnerMacroTranslations</name>
     <number>0</number>
     <className>XWiki.TranslationDocumentClass</className>
     <guid>b05dd5fb-ef72-42df-954c-7c949e6153f7</guid>
