@@ -456,72 +456,74 @@ def discard; /** It seems the Groovy macro prints the last variable in case ther
   'StaticListClass': 'String'
 })
 {{html clean="false"}}
-&lt;ul class="nav $tabStyle searchgrid-tabs" role="tablist"&gt;
-  #foreach ($tab in $tabs)
-    #set ($tabId = $foreach.index)
-    &lt;li role="presentation"&gt;
-      ## NB: not storing the href in the tab elements for now since there is a bug in Bootstrap
-      ## with special characters in the URL. Or check the escapes
-      ## href="#$query.replaceAll('=', '--eq--').replaceAll('&amp;', '--and--').replaceAll('/', '--slash--').replaceAll("\*", '--star--')"
-      ## TODO: factorize sort code with SearchGridMacro
-      #set ($sort = "$!tab.sort")
-      #if ($sort == '')
-        #set ($sort = 'title:asc')
-      #end
-      #set ($sort = $sort.split(':'))
-      #set ($sortProperty = $sort.get(0))
-      #set ($sortOrder = $sort.get(1))
-      #set ($wikiId = $services.wiki.getCurrentWikiDescriptor().getId())
-      #if ($sortProperty == 'title')
-        #set ($sortProperty = "${sortProperty}_sort")
-      #else
-        #set ($idx = $sortProperty.lastIndexOf('.'))
-        #if ($idx &gt; 0)
-          #set ($className = $sortProperty.substring(0, $idx))
-          #set ($class = $xwiki.getClass($className))
-          #set ($sortProperty = $sortProperty.substring($mathtool.add($idx, 1)))
-          #set ($property = $class.get($sortProperty))
-          #set ($type = $propTypeMap[$property.type])
-          #set ($sortProperty = "property.${className}.${sortProperty}_sort${type}")
+## We surround the nav in a container div to set a full-width border on mobile when ul is set to nowrap
+&lt;div class="searchgrid-tabs-container"&gt;
+  &lt;ul class="nav $tabStyle searchgrid-tabs" role="tablist"&gt;
+    #foreach ($tab in $tabs)
+      #set ($tabId = $foreach.index)
+      &lt;li role="presentation"&gt;
+        ## NB: not storing the href in the tab elements for now since there is a bug in Bootstrap
+        ## with special characters in the URL. Or check the escapes
+        ## href="#$query.replaceAll('=', '--eq--').replaceAll('&amp;', '--and--').replaceAll('/', '--slash--').replaceAll("\*", '--star--')"
+        ## TODO: factorize sort code with SearchGridMacro
+        #set ($sort = "$!tab.sort")
+        #if ($sort == '')
+          #set ($sort = 'title:asc')
         #end
-      #end
-      ## TODO: check if searchId parameter is needed
-      #set ($className = $tab['class'])
-      #set ($query = "f_class=$className&amp;f_type=DOCUMENT&amp;text=*&amp;f_wiki=$wikiId")
-      #set ($filter = "$!tab.filter")
-      #if ($filter != '')
-        #set ($query = "$query&amp;$filter")
-      #end
-      ## TODO: this code is the same as the one SearchGridMacro, see how to declare it just once
-      #set ($facets = [])
-      #if ("$!tab.facets" != '')
-        #set ($documentProperties = ['author', 'creationdate', 'creator', 'date', 'hidden', 'locale', 'space_facet', 'type', 'wiki'])
-        #foreach ($facet in $tab.facets.split(','))
-          ## Facet can be declared either on the current class or on distinct classes
-          #set ($idx = $facet.indexOf('.'))
-          #if ($documentProperties.indexOf($facet) &lt; 0 &amp;&amp; $idx &lt; 0 &amp;&amp; "$!className" != '')
-            #set ($discard = $facets.add("${className}.${facet.trim()}"))
-          #else
-            #set ($discard = $facets.add($facet))
+        #set ($sort = $sort.split(':'))
+        #set ($sortProperty = $sort.get(0))
+        #set ($sortOrder = $sort.get(1))
+        #set ($wikiId = $services.wiki.getCurrentWikiDescriptor().getId())
+        #if ($sortProperty == 'title')
+          #set ($sortProperty = "${sortProperty}_sort")
+        #else
+          #set ($idx = $sortProperty.lastIndexOf('.'))
+          #if ($idx &gt; 0)
+            #set ($className = $sortProperty.substring(0, $idx))
+            #set ($class = $xwiki.getClass($className))
+            #set ($sortProperty = $sortProperty.substring($mathtool.add($idx, 1)))
+            #set ($property = $class.get($sortProperty))
+            #set ($type = $propTypeMap[$property.type])
+            #set ($sortProperty = "property.${className}.${sortProperty}_sort${type}")
           #end
         #end
-      #end
-      #set ($query = "$query&amp;sort=$sortProperty&amp;sortOrder=$sortOrder&amp;rows=$limit&amp;r=1&amp;searchGridId=${searchGridId}&amp;tab=$tabId")
-      #if ($showHidden == 'false')
-        #set ($query = "$query&amp;hidden=false")
-      #end
-      &lt;a class="search-filter"
-        href="#$tabId"
-        data-tab="$tabId"
-        data-searchgrid-id="$searchGridId"
-        data-query="$escapetool.xml($query)"
-        data-facets="$escapetool.xml($stringtool.join($facets, ','))"
-        aria-controls="tab-pane-${searchGridId}" role="tab" data-toggle="tab"&gt;
-        $escapetool.xml($tab.label)
-      &lt;/a&gt;
-    &lt;/li&gt;
-  #end
-&lt;/ul&gt;
+        ## TODO: check if searchId parameter is needed
+        #set ($className = $tab['class'])
+        #set ($query = "f_class=$className&amp;f_type=DOCUMENT&amp;text=*&amp;f_wiki=$wikiId")
+        #set ($filter = "$!tab.filter")
+        #if ($filter != '')
+          #set ($query = "$query&amp;$filter")
+        #end
+        ## TODO: this code is the same as the one SearchGridMacro, see how to declare it just once
+        #set ($facets = [])
+        #if ("$!tab.facets" != '')
+          #set ($documentProperties = ['author', 'creationdate', 'creator', 'date', 'hidden', 'locale', 'space_facet', 'type', 'wiki'])
+          #foreach ($facet in $tab.facets.split(','))
+            ## Facet can be declared either on the current class or on distinct classes
+            #set ($idx = $facet.indexOf('.'))
+            #if ($documentProperties.indexOf($facet) &lt; 0 &amp;&amp; $idx &lt; 0 &amp;&amp; "$!className" != '')
+              #set ($discard = $facets.add("${className}.${facet.trim()}"))
+            #else
+              #set ($discard = $facets.add($facet))
+            #end
+          #end
+        #end
+        #set ($query = "$query&amp;sort=$sortProperty&amp;sortOrder=$sortOrder&amp;rows=$limit&amp;r=1&amp;searchGridId=${searchGridId}&amp;tab=$tabId")
+        #if ($showHidden == 'false')
+          #set ($query = "$query&amp;hidden=false")
+        #end
+        &lt;a class="search-filter"
+          href="#$tabId"
+          data-tab="$tabId"
+          data-searchgrid-id="$searchGridId"
+          data-query="$escapetool.xml($query)"
+          data-facets="$escapetool.xml($stringtool.join($facets, ','))"
+          aria-controls="tab-pane-${searchGridId}" role="tab" data-toggle="tab"&gt;
+          $escapetool.xml($tab.label)
+        &lt;/a&gt;
+      &lt;/li&gt;
+    #end
+  &lt;/ul&gt;
 {{/html}}
 
 (% class="tab-content" %)(((
