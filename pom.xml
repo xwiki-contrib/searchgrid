@@ -32,7 +32,7 @@
   <artifactId>searchgrid</artifactId>
   <name>SearchGrid</name>
   <description>Performs a Solr search and displays results in a grid with facets on top</description>
-  <version>1.1</version>
+  <version>1.2-SNAPSHOT</version>
   <developers>
     <developer>
       <id>slauriere</id>
@@ -43,7 +43,7 @@
     <connection>scm:git:git://github.com/xwiki-contrib/searchgrid.git</connection>
     <developerConnection>scm:git:git@github.com:xwiki-contrib/searchgrid.git</developerConnection>
     <url>https://github.com/xwiki-contrib/searchgrid/tree/master</url>
-    <tag>searchgrid-1.1</tag>
+    <tag>HEAD</tag>
   </scm>
   <properties>
     <xwiki.extension.name>SearchGrid</xwiki.extension.name>
