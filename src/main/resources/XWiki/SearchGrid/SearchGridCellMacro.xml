@@ -430,25 +430,14 @@
   #end
   *#
   #set ($page = $xwiki.getDocument($reference))
-  #set ($flag = false)
   #if ($columns.size() == 0)
+    #set ($discard = $xcontext.put('reference', $reference))
+    {{html clean="false"}}
     #foreach ($uix in $services.uix.getExtensions('org.xwiki.contrib.searchgrid.cell'))
-      #if ($uix.id.indexOf($shortClassName) &gt;= 0)
-        #set ($discard = $xcontext.put('reference', $reference))
-        ## TODO: see why we need to use the html macro (nested script error otherwise)
-        {{html clean="false"}}
-        $services.rendering.render($uix.execute(), 'html/5.0')
-        {{/html}}
-        #set ($discard = $xcontext.remove('reference'))
-        #set ($flag = true)
-        #break()
-      #end
+      $services.rendering.render($uix.execute(), 'html/5.0').trim()
     #end
-    #if (!$flag)
-      (% class="searchgrid-grid-cell-header" %)(((
-        = [[$page.title&gt;&gt;$page.fullName]] =
-      )))
-    #end
+    {{/html}}
+    #set ($discard = $xcontext.remove('reference'))
   #else
     #set ($obj = $page.getObject($className))
     #set ($separator = '')
