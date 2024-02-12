@@ -218,6 +218,129 @@
   <object>
     <name>XWiki.SearchGrid.SearchGridTabsMacro</name>
     <number>0</number>
+    <className>XWiki.StyleSheetExtension</className>
+    <guid>7da7c397-47fd-4dc9-bbde-eeaf3a558618</guid>
+    <class>
+      <name>XWiki.StyleSheetExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <defaultValue>long</defaultValue>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <contenttype>PureText</contenttype>
+        <disabled>0</disabled>
+        <editor>PureText</editor>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <restricted>0</restricted>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <contentType>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>contentType</name>
+        <number>6</number>
+        <prettyName>Content Type</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>CSS|LESS</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </contentType>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>.searchgrid-tab-content {
+  padding-top: 0.8rem; /** padding rather than margin because we want the ability to draw border around the whole content. */
+}</code>
+    </property>
+    <property>
+      <contentType/>
+    </property>
+    <property>
+      <name/>
+    </property>
+    <property>
+      <parse/>
+    </property>
+    <property>
+      <use/>
+    </property>
+  </object>
+  <object>
+    <name>XWiki.SearchGrid.SearchGridTabsMacro</name>
+    <number>0</number>
     <className>XWiki.WikiMacroClass</className>
     <guid>55e410e1-a664-45f2-92dc-012849682d2c</guid>
     <class>
@@ -434,27 +557,20 @@
 /** We use Groovy to parse the JSON content in order to keep the "class" property, which
  * is removed when performing the parsing in Velocity. */
 import groovy.json.JsonSlurper;
-xwiki.ssx.use(wikimacro.doc.fullName);
-xwiki.jsx.use(wikimacro.doc.fullName);
 def jsonSlurper = new JsonSlurper();
 tabs = jsonSlurper.parseText(wikimacro.content);
 def discard; /** It seems the Groovy macro prints the last variable in case there is no output. */
 {{/groovy}}
 
+{{include page="XWiki/SearchGrid/SearchGridMacros"/}}
+
 {{velocity}}
+#set ($discard = $xwiki.ssx.use($wikimacro.doc.fullName))
+#set ($discard = $xwiki.jsx.use($wikimacro.doc.fullName))
 #set ($searchGridId = $xwiki.generateRandomString(5))
 #set ($showHidden = "$!wikimacro.parameters.showHidden")
 #set ($limit = "$!wikimacro.parameters.limit")
 #set ($tabStyle = "nav-$!wikimacro.parameters.style")
-## TODO: factorize with SearchGridMacro
-## TODO: see which other properties need to be suffixed by "sort"
-#set ($propTypeMap = {
-  'DBListClass': 'String',
-  'DateClass': 'Date',
-  'UsersClass': 'String',
-  'StringClass': 'String',
-  'StaticListClass': 'String'
-})
 {{html clean="false"}}
 ## We surround the nav in a container div to set a full-width border on mobile when ul is set to nowrap
 &lt;div class="searchgrid-tabs-container"&gt;
@@ -466,35 +582,17 @@ def discard; /** It seems the Groovy macro prints the last variable in case ther
         ## with special characters in the URL. Or check the escapes
         ## href="#$query.replaceAll('=', '--eq--').replaceAll('&amp;', '--and--').replaceAll('/', '--slash--').replaceAll("\*", '--star--')"
         ## TODO: factorize sort code with SearchGridMacro
-        #set ($sort = "$!tab.sort")
-        #if ($sort == '')
-          #set ($sort = 'title:asc')
-        #end
-        #set ($sort = $sort.split(':'))
-        #set ($sortProperty = $sort.get(0))
-        #set ($sortOrder = $sort.get(1))
-        #set ($wikiId = $services.wiki.getCurrentWikiDescriptor().getId())
-        #if ($sortProperty == 'title')
-          #set ($sortProperty = "${sortProperty}_sort")
-        #else
-          #set ($idx = $sortProperty.lastIndexOf('.'))
-          #if ($idx &gt; 0)
-            #set ($className = $sortProperty.substring(0, $idx))
-            #set ($class = $xwiki.getClass($className))
-            #set ($sortProperty = $sortProperty.substring($mathtool.add($idx, 1)))
-            #set ($property = $class.get($sortProperty))
-            #set ($type = $propTypeMap[$property.type])
-            #set ($sortProperty = "property.${className}.${sortProperty}_sort${type}")
-          #end
-        #end
+        #extractSortOptions($tab.sort, $sortOptions)
         ## TODO: check if searchId parameter is needed
         #set ($className = $tab['class'])
+        #set ($wikiId = $services.wiki.getCurrentWikiDescriptor().getId())
         #set ($query = "f_class=$className&amp;f_type=DOCUMENT&amp;text=*&amp;f_wiki=$wikiId")
         #set ($filter = "$!tab.filter")
         #if ($filter != '')
           #set ($query = "$query&amp;$filter")
         #end
         ## TODO: this code is the same as the one SearchGridMacro, see how to declare it just once
+        ##extractFacets("$!tab.facets", $facets)
         #set ($facets = [])
         #if ("$!tab.facets" != '')
           #set ($documentProperties = ['author', 'creationdate', 'creator', 'date', 'hidden', 'locale', 'space_facet', 'type', 'wiki'])
@@ -508,7 +606,7 @@ def discard; /** It seems the Groovy macro prints the last variable in case ther
             #end
           #end
         #end
-        #set ($query = "$query&amp;sort=$sortProperty&amp;sortOrder=$sortOrder&amp;rows=$limit&amp;r=1&amp;searchGridId=${searchGridId}&amp;tab=$tabId")
+        #set ($query = "$query&amp;sort=${sortOptions.property}&amp;sortOrder=${sortOptions.order}&amp;rows=$limit&amp;r=1&amp;searchGridId=${searchGridId}&amp;tab=$tabId")
         #if ($showHidden == 'false')
           #set ($query = "$query&amp;hidden=false")
         #end
@@ -524,9 +622,10 @@ def discard; /** It seems the Groovy macro prints the last variable in case ther
       &lt;/li&gt;
     #end
   &lt;/ul&gt;
+&lt;/div&gt;
 {{/html}}
 
-(% class="tab-content" %)(((
+(% class="tab-content searchgrid-tab-content" %)(((
   (% role="tabpanel" class="tab-pane active" id="tab-pane-${searchGridId}" %)(((
     {{searchGrid activate="false" id="$searchGridId"/}}
   )))

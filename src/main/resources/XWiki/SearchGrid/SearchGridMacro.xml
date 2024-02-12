@@ -603,9 +603,9 @@ require(['jquery', 'bootstrap'], function($) {
             display: none;
           }
           /** ol is used in the breadcrumb of the SolrSpaceFacet */
-          /** .search-facet-item &gt; a, ol {
+          /*.search-facet-item &gt; a, ol {
             font-size: 1.2rem;
-          } */
+          }*/
           /** overrides default to reduce left space */
           .dropdown-menu &gt; li &gt; a {
             padding: 3px 12px;
@@ -931,7 +931,9 @@ require(['jquery', 'bootstrap'], function($) {
       <async_enabled>0</async_enabled>
     </property>
     <property>
-      <code>{{velocity}}
+      <code>{{include page="XWiki/SearchGrid/SearchGridMacros" /}}
+
+{{velocity}}
 #set ($discard = $xwiki.ssx.use($wikimacro.doc.fullName))
 #set ($discard = $xwiki.jsx.use($wikimacro.doc.fullName))
 #set ($searchGridId = $wikimacro.parameters.id)
@@ -952,43 +954,13 @@ require(['jquery', 'bootstrap'], function($) {
 #if ($filter != '')
   #set ($query = "$query&amp;$filter")
 #end
-#set ($facets = [])
-#if ($wikimacro.parameters.facets != $NULL)
-  #set ($documentProperties = ['author', 'creationdate', 'creator', 'date', 'hidden', 'locale', 'space_facet', 'type', 'wiki'])
-  #foreach ($facet in $wikimacro.parameters.facets)
-    ## Facet can be declared either on the current class or on distinct classes
-    #set ($idx = $facet.indexOf('.'))
-    #if ($documentProperties.indexOf($facet) &lt; 0 &amp;&amp; $idx &lt; 0)
-      #set ($discard = $facets.add("${className}.$facet"))
-    #else
-      #set ($discard = $facets.add($facet))
-    #end
-  #end
-#end
 ## TODO: check if passing "searchGridId" is really needed
+#extractFacets($wikimacro.parameters.facets, $className, $facets)
 #set ($limit = "$!wikimacro.parameters.limit")
 #set ($sort = "$!wikimacro.parameters.sort")
-#set ($sort = $sort.split(':'))
-#set ($sortProperty = $sort.get(0))
-#set ($sortOrder = $sort.get(1))
-## TODO: see which other properties need to be suffixed for "sort"
-#set ($propTypeMap = {
-  'DBListClass': 'String',
-  'DateClass': 'Date',
-  'UsersClass': 'String',
-  'StringClass': 'String',
-  'StaticListClass': 'String'
-})
-#if ($sortProperty == 'title')
-  #set ($sortProperty = "${sortProperty}_sort")
-#elseif ($sortProperty.indexOf('.') &lt; 0)
-  #set ($class = $xwiki.getClass($className))
-  #set ($property = $class.get($sortProperty))
-  #set ($type = $propTypeMap[$property.type])
-  #set ($sortProperty = "property.${className}.${sortProperty}_sort${type}")
-#end
+#extractSortOptions($sort, $className, $sortOptions)
 #set ($wikiId = $services.wiki.getCurrentWikiDescriptor().getId())
-#set ($query = "$query&amp;sort=$sortProperty&amp;sortOrder=$sortOrder&amp;f_wiki=$wikiId&amp;rows=$limit&amp;r=1&amp;f_type=DOCUMENT&amp;text=*")
+#set ($query = "$query&amp;sort=${sortOptions.property}&amp;sortOrder=${sortOptions.order}&amp;f_wiki=$wikiId&amp;rows=$limit&amp;r=1&amp;f_type=DOCUMENT&amp;text=*")
 #set ($query = "${query}&amp;searchGridId=${searchGridId}")
 #set ($dataActivate = '')
 #set ($activate = $wikimacro.parameters.activate)
