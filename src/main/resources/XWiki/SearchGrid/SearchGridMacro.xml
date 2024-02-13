@@ -1188,7 +1188,7 @@ require(['jquery', 'bootstrap'], function($) {
       <name>facets</name>
     </property>
     <property>
-      <type>java.util.List</type>
+      <type>java.lang.String</type>
     </property>
   </object>
   <object>

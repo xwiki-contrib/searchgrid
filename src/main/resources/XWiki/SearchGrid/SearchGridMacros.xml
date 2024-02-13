@@ -40,8 +40,9 @@
 #macro (extractFacets $facetsParameter $className $return)
   #set ($documentProperties = ['author', 'creationdate', 'creator', 'date', 'hidden', 'locale', 'space_facet', 'type', 'wiki'])
   #set ($facets = [])
-  #if ($facetsParameter != $NULL)
-    #foreach ($facet in $facetsParameter)
+  #if ("$!facetsParameter" != '')
+    #foreach ($facet in $facetsParameter.split(','))
+      #set ($facet = $facet.trim())
       ## Facet can be declared either on the current class or on distinct classes
       #set ($idx = $facet.indexOf('.'))
       #if ($documentProperties.indexOf($facet) &lt; 0 &amp;&amp; $idx &lt; 0)
@@ -77,13 +78,12 @@
     #set ($idx = $sortProperty.lastIndexOf('.'))
     #if ($idx &gt; 0)
       #set ($className = $sortProperty.substring(0, $idx))
-    #else
-      #set ($class = $xwiki.getClass($className))
-      #set ($sortProperty = $sortProperty.substring($mathtool.add($idx, 1)))
-      #set ($property = $class.get($sortProperty))
-      #set ($type = $propTypeMap[$property.type])
-      #set ($sortProperty = "property.${className}.${sortProperty}_sort${type}")
     #end
+    #set ($class = $xwiki.getClass($className))
+    #set ($sortProperty = $sortProperty.substring($mathtool.add($idx, 1)))
+    #set ($property = $class.get($sortProperty))
+    #set ($type = $propTypeMap[$property.type])
+    #set ($sortProperty = "property.${className}.${sortProperty}_sort${type}")
   #end
   #set ($result.property = $sortProperty)
   #set ($result.order = $sortOrder)

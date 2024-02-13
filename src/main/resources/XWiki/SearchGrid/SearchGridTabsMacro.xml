@@ -581,31 +581,16 @@ def discard; /** It seems the Groovy macro prints the last variable in case ther
         ## NB: not storing the href in the tab elements for now since there is a bug in Bootstrap
         ## with special characters in the URL. Or check the escapes
         ## href="#$query.replaceAll('=', '--eq--').replaceAll('&amp;', '--and--').replaceAll('/', '--slash--').replaceAll("\*", '--star--')"
-        ## TODO: factorize sort code with SearchGridMacro
-        #extractSortOptions($tab.sort, $sortOptions)
-        ## TODO: check if searchId parameter is needed
         #set ($className = $tab['class'])
+        #extractSortOptions($tab.sort, $className, $sortOptions)
+        ## TODO: check if searchId parameter is needed
         #set ($wikiId = $services.wiki.getCurrentWikiDescriptor().getId())
         #set ($query = "f_class=$className&amp;f_type=DOCUMENT&amp;text=*&amp;f_wiki=$wikiId")
         #set ($filter = "$!tab.filter")
         #if ($filter != '')
           #set ($query = "$query&amp;$filter")
         #end
-        ## TODO: this code is the same as the one SearchGridMacro, see how to declare it just once
-        ##extractFacets("$!tab.facets", $facets)
-        #set ($facets = [])
-        #if ("$!tab.facets" != '')
-          #set ($documentProperties = ['author', 'creationdate', 'creator', 'date', 'hidden', 'locale', 'space_facet', 'type', 'wiki'])
-          #foreach ($facet in $tab.facets.split(','))
-            ## Facet can be declared either on the current class or on distinct classes
-            #set ($idx = $facet.indexOf('.'))
-            #if ($documentProperties.indexOf($facet) &lt; 0 &amp;&amp; $idx &lt; 0 &amp;&amp; "$!className" != '')
-              #set ($discard = $facets.add("${className}.${facet.trim()}"))
-            #else
-              #set ($discard = $facets.add($facet))
-            #end
-          #end
-        #end
+        #extractFacets($tab.facets, $className, $facets)
         #set ($query = "$query&amp;sort=${sortOptions.property}&amp;sortOrder=${sortOptions.order}&amp;rows=$limit&amp;r=1&amp;searchGridId=${searchGridId}&amp;tab=$tabId")
         #if ($showHidden == 'false')
           #set ($query = "$query&amp;hidden=false")
