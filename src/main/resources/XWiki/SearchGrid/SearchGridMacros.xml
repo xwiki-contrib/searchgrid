@@ -72,8 +72,11 @@
   #set ($sortProperty = $sort.get(0))
   #set ($sortOrder = $sort.get(1))
   #set ($result = {})
-  #if ($sortProperty == 'title')
-    #set ($sortProperty = "${sortProperty}_sort")
+  #set ($docProperties = ['author', 'creationDate', 'date', 'title'])
+  #if ($docProperties.contains($sortProperty))
+    #if ($sortProperty == 'title')
+      #set ($sortProperty = "${sortProperty}_sort")
+    #end
   #else
     #set ($idx = $sortProperty.lastIndexOf('.'))
     #if ($idx &gt; 0)
