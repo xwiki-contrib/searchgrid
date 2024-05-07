@@ -947,9 +947,7 @@ require(['jquery', 'bootstrap'], function($) {
 #set ($className = "$!wikimacro.parameters['class']")
 #set ($query = "f_class=$className")
 #set ($showHidden = "$!wikimacro.parameters.showHidden")
-#if ($showHidden == 'false')
-  #set ($query = "$query&amp;hidden=false")
-#end
+#set ($query = "$query&amp;hidden=$showHidden")
 #set ($filter = "$!wikimacro.parameters.filter")
 #if ($filter != '')
   #set ($query = "$query&amp;$filter")
