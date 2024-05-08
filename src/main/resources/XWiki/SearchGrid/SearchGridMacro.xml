@@ -688,7 +688,10 @@ require(['jquery', 'bootstrap'], function($) {
     .search-ui {
       .searchgrid-toolbar {
         grid-template-areas: "facets input sort";
-        grid-template-columns: auto 1fr .1fr;
+        grid-template-columns: auto 1fr 1fr;
+        .search-sort {
+          text-align: right;
+        }
       }
       .searchgrid-grid {
         &amp;.searchgrid-grid-two-cols {
