@@ -948,12 +948,22 @@ require(['jquery', 'bootstrap'], function($) {
 ## TODO: see also LiveDataMacroConfiguration#getSourceParameters
 ##if ("$!wikimacro.parameters.query" == '')
 #set ($className = "$!wikimacro.parameters['class']")
-#set ($query = "f_class=$className")
+#if ("$!className" != '')
+  #set ($query = "f_class=$className")
+#else
+  #set ($query = '')
+#end
+#set ($type = $wikimacro.parameters.type)
 #set ($showHidden = "$!wikimacro.parameters.showHidden")
 #set ($query = "$query&amp;hidden=$showHidden")
 #set ($filter = "$!wikimacro.parameters.filter")
 #if ($filter != '')
   #set ($query = "$query&amp;$filter")
+#end
+#if ($wikimacro.parameters.filterQuery.size() &gt; 0)
+  #foreach ($filterQuery in $wikimacro.parameters.filterQuery)
+    #set ($query = "$query&amp;fq=$filterQuery")
+  #end
 #end
 ## TODO: check if passing "searchGridId" is really needed
 #extractFacets($wikimacro.parameters.facets, $className, $facets)
@@ -961,7 +971,7 @@ require(['jquery', 'bootstrap'], function($) {
 #set ($sort = "$!wikimacro.parameters.sort")
 #extractSortOptions($sort, $className, $sortOptions)
 #set ($wikiId = $services.wiki.getCurrentWikiDescriptor().getId())
-#set ($query = "$query&amp;sort=${sortOptions.property}&amp;sortOrder=${sortOptions.order}&amp;f_wiki=$wikiId&amp;rows=$limit&amp;r=1&amp;f_type=DOCUMENT&amp;text=*")
+#set ($query = "$query&amp;sort=${sortOptions.property}&amp;sortOrder=${sortOptions.order}&amp;f_wiki=$wikiId&amp;rows=$limit&amp;r=1&amp;f_type=$type&amp;text=*")
 #set ($query = "${query}&amp;searchGridId=${searchGridId}")
 #set ($dataActivate = '')
 #set ($activate = $wikimacro.parameters.activate)
@@ -1460,6 +1470,186 @@ require(['jquery', 'bootstrap'], function($) {
     </property>
     <property>
       <type/>
+    </property>
+  </object>
+  <object>
+    <name>XWiki.SearchGrid.SearchGridMacro</name>
+    <number>6</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>1f590dbd-6d07-4268-a852-7ef829e2396b</guid>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultValue>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <restricted>0</restricted>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </mandatory>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <type>
+        <cache>0</cache>
+        <defaultValue>Unknown</defaultValue>
+        <disabled>0</disabled>
+        <displayType>input</displayType>
+        <freeText>allowed</freeText>
+        <largeStorage>1</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>type</name>
+        <number>5</number>
+        <picker>1</picker>
+        <prettyName>Parameter type</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator>|</separator>
+        <separators>|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>Unknown|Wiki</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </type>
+    </class>
+    <property>
+      <defaultValue>DOCUMENT</defaultValue>
+    </property>
+    <property>
+      <description/>
+    </property>
+    <property>
+      <mandatory>0</mandatory>
+    </property>
+    <property>
+      <name>type</name>
+    </property>
+    <property>
+      <type/>
+    </property>
+  </object>
+  <object>
+    <name>XWiki.SearchGrid.SearchGridMacro</name>
+    <number>7</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>efbe19ad-4597-48d8-9fe1-4d7669c02b65</guid>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultValue>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <restricted>0</restricted>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </mandatory>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <type>
+        <cache>0</cache>
+        <defaultValue>Unknown</defaultValue>
+        <disabled>0</disabled>
+        <displayType>input</displayType>
+        <freeText>allowed</freeText>
+        <largeStorage>1</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>type</name>
+        <number>5</number>
+        <picker>1</picker>
+        <prettyName>Parameter type</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator>|</separator>
+        <separators>|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>Unknown|Wiki</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </type>
+    </class>
+    <property>
+      <defaultValue/>
+    </property>
+    <property>
+      <description/>
+    </property>
+    <property>
+      <mandatory>0</mandatory>
+    </property>
+    <property>
+      <name>filterQuery</name>
+    </property>
+    <property>
+      <type>java.util.List</type>
     </property>
   </object>
 </xwikidoc>

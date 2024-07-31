@@ -63,7 +63,8 @@
   'StaticListClass': ['_string', 'XWiki.SearchGrid.StaticListFacet'],
   'space_facet': ['', 'XWiki.SearchGrid.SolrSpaceFacet'],
   'creator': ['', 'XWiki.SearchGrid.SolrUserFacet'],
-  'hidden': ['', 'XWiki.SearchGrid.SolrHiddenFacet']
+  'hidden': ['', 'XWiki.SearchGrid.SolrHiddenFacet'],
+  'class': ['', 'XWiki.SearchGrid.SolrClassFacet']
 })
 #foreach ($facet in $facets)
   #set ($idx = $facet.lastIndexOf('.'))
@@ -82,6 +83,9 @@
     #set ($solrConfig.facetDisplayers[$facet] = $propTypeFacetMap[$facet].get(1))
   #elseif ($facet == 'locale')
     #set ($discard = $solrConfig.facetFields.add($facet))
+  #elseif ($facet == 'class')
+    #set ($discard = $solrConfig.facetFields.add($facet))
+    #set ($solrConfig.facetDisplayers[$facet] = $propTypeFacetMap[$facet].get(1))
   #end
 #end
 #set ($solrConfig['facetPaginationStep'] = 20)

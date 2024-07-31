@@ -304,6 +304,10 @@
     ## Tag the filter so that we can exclude it when faceting in order to support multi-select faceting.
     #set ($discard = $filterQuery.add("{!tag=$filter.key}$filter.key:($!stringtool.join($filter.value, ' OR '))"))
   #end
+  #set ($fq = $request.getParameterValues('fq'))
+  #foreach ($fqItem in $fq)
+    #set ($discard = $filterQuery.add($fqItem))
+  #end
   #set ($discard = $query.bindValue('fq', $filterQuery))
 #end
 
@@ -533,6 +537,7 @@
 #macro (displaySearchResult_document $searchResult)
   {{searchGridCell
     reference="$services.model.serialize($searchResultReference)"
+    type="DOCUMENT"
     class="$!request.f_class"
     hidden="$!searchResult.hidden"
     columns="$!request.columns"/}}
@@ -552,6 +557,19 @@
         class="search-result-language" &gt;($escapetool.xml($searchResult.locale))&lt;/span&gt;
     #end
   &lt;/h2&gt;
+#end
+
+## Customized display
+#macro (displaySearchResult_object $searchResult)
+  ## TODO: report bug when searching for objects
+  #set ($documentReference = $services.model.createDocumentReference('WebHome', $searchResultReference.parent.parent.parent.parent.parent.parent))
+  {{searchGridCell
+    reference="$services.model.serialize($documentReference)"
+    type="OBJECT"
+    class="${searchResult.get('class').get(0)}"
+    index="$searchResult.number"
+    hidden="$!searchResult.hidden"
+    columns="$!request.columns"/}}
 #end
 
 ## Customized to not display highlight / facet options

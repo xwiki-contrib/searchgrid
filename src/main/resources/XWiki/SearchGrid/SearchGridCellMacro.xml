@@ -401,7 +401,7 @@
 #if ($idx &gt; 0)
   #set ($shortClassName = $className.substring($mathtool.add($idx, 1)))
 #end
-#set ($documentProperties = ['author', 'creationdate', 'creator', 'date', 'hidden', 'locale', 'type', 'wiki'])
+#set ($documentProperties = ['author', 'creationdate', 'creator', 'date', 'hidden', 'locale', 'type', 'wiki', 'class'])
 #set ($columns = $wikimacro.parameters.columns)
 #set ($rowCssClass = '')
 #if ($columns.size() &gt; 0)
@@ -455,7 +455,12 @@
           #end
         #else
           #if ($propertyName == 'title')
-            [[$page.title&gt;&gt;$page.fullName]]
+            #if ($wikimacro.parameters.type == 'DOCUMENT')
+              [[$page.displayTitle&gt;&gt;doc:$page.fullName]]
+            #elseif ($wikimacro.parameters.type == 'OBJECT')
+              #set ($label = $wikimacro.parameters['class'])
+              [[$services.localization.render($label)&gt;&gt;doc:$page.fullName]]
+            #end
           #else
             #set ($propObj = $obj)
             #set ($propObjClassName = $className)

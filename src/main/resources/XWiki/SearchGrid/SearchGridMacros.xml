@@ -38,7 +38,7 @@
   <hidden>true</hidden>
   <content>{{velocity output="false"}}
 #macro (extractFacets $facetsParameter $className $return)
-  #set ($documentProperties = ['author', 'creationdate', 'creator', 'date', 'hidden', 'locale', 'space_facet', 'type', 'wiki'])
+  #set ($documentProperties = ['author', 'creationdate', 'creator', 'date', 'hidden', 'locale', 'space_facet', 'type', 'wiki', 'class'])
   #set ($facets = [])
   #if ("$!facetsParameter" != '')
     #foreach ($facet in $facetsParameter.split(','))
