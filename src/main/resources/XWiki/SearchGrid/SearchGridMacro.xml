@@ -289,25 +289,20 @@ require(['jquery', 'bootstrap'], function($) {
     const columns = $searchGrid.attr('data-columns');
     const cols = $searchGrid.attr('data-cols');
     const sortable = $searchGrid.attr('data-sortable');
+    const itemDisplayer = $searchGrid.attr('data-item-displayer');
+
     let params = new URLSearchParams(queryString);
-    if (text !== undefined &amp;&amp; text !== '') {
-      params.set('text', text);
-    } else {
-      params.set('text', '*');
-    }
-    if (columns !== '') {
-      params.set('columns', columns);
-    }
-    if (cols !== '') {
-      params.set('cols', cols);
-    }
-    if (sortable != '') {
-      params.set('sortable', sortable);
-    }
+    params.set('text', text !== undefined &amp;&amp; text !== '' ? text: '*');
+    params.set('columns', columns !== '' ? columns : '');
+    params.set('cols', cols !== '' ? cols : '');
+    params.set('sortable', sortable != '' ? sortable : '');
+    params.set('itemDisplayer', itemDisplayer != '' ? itemDisplayer : '');
+
     const facets = facetsAttr.split(',');
     facets.forEach(facet =&gt; {
       params.append('facets', facet);
     });
+
     const sourceURL = source.getURL('get', params.toString());
     // Store query as CSS class in #search element in order to be able to style search results
     // with rules depending on the query
@@ -668,7 +663,7 @@ require(['jquery', 'bootstrap'], function($) {
           padding: .6em 1em;
           background: lighten(@xwiki-border-color, 7%);
           font-weight: bold;
-          .searchgrid-grid-cell {
+          .searchgrid-grid-item {
             p {
               margin: 0;
             }
@@ -676,7 +671,7 @@ require(['jquery', 'bootstrap'], function($) {
         }
       }
 
-      .searchgrid-grid-cell {
+      .searchgrid-grid-item {
         transition: background-color .2s ease,border-color .2s ease;
         height: 100%;
         h1 {
@@ -687,7 +682,7 @@ require(['jquery', 'bootstrap'], function($) {
         background: #fafafa;
       }*/
         /** This is to not display the grid columns table header in tabular mode by default, in case the search returns no result.
-         * This rule is overridden in SearchGridCell (hence when there is at least one result / cell) by a more powerful selector. */
+         * This rule is overridden in SearchGridItem (hence when there is at least one result / item) by a more powerful selector. */
         &amp;.searchgrid-grid-header {
           display: none;
         }
@@ -962,7 +957,7 @@ require(['jquery', 'bootstrap'], function($) {
 {{velocity}}
 #set ($discard = $xwiki.ssx.use($wikimacro.doc.fullName))
 #set ($discard = $xwiki.jsx.use($wikimacro.doc.fullName))
-#set ($discard = $xwiki.ssx.use('XWiki.SearchGrid.SearchGridCellMacro'))
+##set ($discard = $xwiki.ssx.use('XWiki.SearchGrid.SearchGridItemMacro'))
 #set ($searchGridId = $wikimacro.parameters.id)
 #if ("$!searchGridId" == '')
   #set ($searchGridId = $util.generateRandomString(5).toLowerCase())
@@ -1008,6 +1003,7 @@ require(['jquery', 'bootstrap'], function($) {
   data-columns="$!wikimacro.parameters.columns"
   data-cols="$!wikimacro.parameters.cols"
   data-sortable="$!wikimacro.parameters.sortable"
+  data-item-displayer="$!wikimacro.parameters.itemDisplayer"
   aria-busy="false"$dataActivate %)(((
     {{spinner top="10rem"/}}
     (% class="search-ui" %)((()))

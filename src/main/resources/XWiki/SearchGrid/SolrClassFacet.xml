@@ -23,11 +23,11 @@
 <xwikidoc version="1.5" reference="XWiki.SearchGrid.SolrClassFacet" locale="">
   <web>XWiki.SearchGrid</web>
   <name>SolrClassFacet</name>
-  <parent>WebHome</parent>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
+  <parent>WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <version>1.1</version>

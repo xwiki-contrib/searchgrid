@@ -477,7 +477,7 @@
   #end
   (% class="searchgrid-grid$columnCountCss" %)(((
     #if ("$!request.columns" != '')
-      (% class="searchgrid-grid-cell searchgrid-grid-cell-row searchgrid-grid-header" %)(((
+      (% class="searchgrid-grid-item searchgrid-grid-item-row searchgrid-grid-header" %)(((
         #set ($columns = $request.columns.split(','))
         #foreach ($column in $columns)
           #set ($idx = $column.lastIndexOf('.'))
@@ -489,7 +489,7 @@
             #set ($className = $request.f_class)
             #set ($column = "${className}_${column}")
           #end
-          (% class="searchgrid-grid-cell-column" %)(((
+          (% class="searchgrid-grid-item-column" %)(((
             $services.localization.render($column)
           )))
         #end
@@ -514,12 +514,11 @@
 ## and remove col-md-12
 #macro (displaySearchResult $searchResult)
   #set ($searchResultReference = $services.solr.resolve($searchResult))
-  (% class="type-$searchResult.type.toLowerCase()" %)(((
-    ## We use the HTML macro here mainly because we don't have a way to escape the wiki syntax in the data provided by the user.
     {{html clean="false" wiki="true"}}
     #evaluate("${escapetool.h}displaySearchResult_$searchResult.type.toLowerCase()(${escapetool.d}searchResult)")
     ##displaySearchResultHighlighting($searchResult)
     {{/html}}
+
     #if ($debug)
 
       ## Scoring debug data.
@@ -530,17 +529,17 @@
       &lt;div class="search-result-debug"&gt;$!escapetool.xml($searchResponse.explainMap.get($searchResult.id))&lt;/div&gt;
       {{/html}}
     #end
-  )))
 #end
 
 ## Customized display
 #macro (displaySearchResult_document $searchResult)
-  {{searchGridCell
-    reference="$services.model.serialize($searchResultReference)"
-    type="DOCUMENT"
-    class="$!request.f_class"
-    hidden="$!searchResult.hidden"
-    columns="$!request.columns"/}}
+    {{searchGridItem
+      reference="$services.model.serialize($searchResultReference)"
+      type="DOCUMENT"
+      class="$!request.f_class"
+      hidden="$!searchResult.hidden"
+      columns="$!request.columns"
+      displayer="$!request.itemDisplayer"/}}
 #end
 
 ## Customized display
@@ -562,14 +561,16 @@
 ## Customized display
 #macro (displaySearchResult_object $searchResult)
   ## TODO: report bug when searching for objects
+  ## TODO: escape
   #set ($documentReference = $services.model.createDocumentReference('WebHome', $searchResultReference.parent.parent.parent.parent.parent.parent))
-  {{searchGridCell
+  {{searchGridItem
     reference="$services.model.serialize($documentReference)"
     type="OBJECT"
     class="${searchResult.get('class').get(0)}"
     index="$searchResult.number"
     hidden="$!searchResult.hidden"
-    columns="$!request.columns"/}}
+    columns="$!request.columns"
+    displayer="$!request.itemDisplayer"/}}
 #end
 
 ## Customized to not display highlight / facet options

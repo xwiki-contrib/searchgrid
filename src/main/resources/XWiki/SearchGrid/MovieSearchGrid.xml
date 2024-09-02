@@ -38,7 +38,7 @@
   <hidden>true</hidden>
   <content>= Grid Layout =
 
-{{searchGrid class="Help.Applications.Movies.Code.MoviesClass" showHidden="false" sort="title:asc" facets="databaseList1,staticList1" cols="2"/}}
+{{searchGrid class="Help.Applications.Movies.Code.MoviesClass" showHidden="false" sort="title:asc" facets="databaseList1,staticList1" cols="2" itemDisplayer="XWiki.SearchGrid.MovieSearchGridItemDisplayer"/}}
 
 = Table Layout =
 

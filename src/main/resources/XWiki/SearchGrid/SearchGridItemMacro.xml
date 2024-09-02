@@ -20,9 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc version="1.5" reference="XWiki.SearchGrid.SearchGridCellMacro" locale="">
+<xwikidoc version="1.5" reference="XWiki.SearchGrid.SearchGridItemMacro" locale="">
   <web>XWiki.SearchGrid</web>
-  <name>SearchGridCellMacro</name>
+  <name>SearchGridItemMacro</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
@@ -31,14 +31,14 @@
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <version>1.1</version>
-  <title>SearchGridCellMacro</title>
+  <title>SearchGridItemMacro</title>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
   <content/>
   <object>
-    <name>XWiki.SearchGrid.SearchGridCellMacro</name>
+    <name>XWiki.SearchGrid.SearchGridItemMacro</name>
     <number>0</number>
     <className>XWiki.StyleSheetExtension</className>
     <guid>9d4615eb-3e6f-4014-9ea6-099e62cb4029</guid>
@@ -143,17 +143,22 @@
       <cache>long</cache>
     </property>
     <property>
-      <code>.searchgrid-grid-cell {
+      <code>.searchgrid-grid-item {
   border: 1px solid @xwiki-border-color;
   padding: 0.6rem 1rem;
   display: grid;
-  &amp;.searchgrid-grid-cell-row {
+
+  &amp;:hover {
+    background: @panel-bg;
+  }
+
+  &amp;.searchgrid-grid-item-row {
     display: flex !important; /** "important" is set in case there are other SearchGrids on the same page with several columns per row, and a display possibly different from "flex". */
     align-items: center;
     p {
       margin: 0;
     }
-    .searchgrid-grid-cell-column {
+    .searchgrid-grid-item-column {
       flex: 1 1 150px;
       margin-right: 1rem;
     }
@@ -176,7 +181,7 @@
     </property>
   </object>
   <object>
-    <name>XWiki.SearchGrid.SearchGridCellMacro</name>
+    <name>XWiki.SearchGrid.SearchGridItemMacro</name>
     <number>0</number>
     <className>XWiki.WikiMacroClass</className>
     <guid>6a7477e1-badf-4f7e-af90-572298740d6c</guid>
@@ -403,47 +408,28 @@
 #end
 #set ($documentProperties = ['author', 'creationdate', 'creator', 'date', 'hidden', 'locale', 'type', 'wiki', 'class'])
 #set ($columns = $wikimacro.parameters.columns)
+#set ($displayer = $wikimacro.parameters.displayer)
 #set ($rowCssClass = '')
 #if ($columns.size() &gt; 0)
-  #set ($rowCssClass = ' searchgrid-grid-cell-row')
+  #set ($rowCssClass = ' searchgrid-grid-item-row')
 #end
-(% class="searchgrid-grid-cell $shortClassName$rowCssClass" %)(((
+(% class="searchgrid-grid-item $shortClassName$rowCssClass" %)(((
   ## Display the title only for search results, ie when a reference is provided
-  ## TODO: maybe see if we can identify search without using the reference
-  #*#set ($html = '')
-  ## TODO: see why we need to use the html macro (nested script error otherwise)
-  {{html clean="false"}}
-  #set ($discard = $xcontext.put('reference', $reference))
-  #set ($html = '')
-  #foreach ($uix in $services.uix.getExtensions('org.xwiki.contrib.searchgrid.cell'))
-    #set ($str = $services.rendering.render($uix.execute(), 'html/5.0'))
-    #set ($html = "$html$str")
-  #end
-  $html
-  {{/html}}
-  ## If there is no uixp output and we're in a search context simply display the title
-  #if ("$!html" == '')
-    (% class="searchgrid-cell-header" %)(((
-      #set ($page = $xwiki.getDocument($reference))
-      = [[$page.title&gt;&gt;$page.fullName]] =
-    )))
-  #end
-  *#
   #set ($page = $xwiki.getDocument($reference))
   #if ($columns.size() == 0)
     #set ($discard = $xcontext.put('reference', $reference))
-    {{html clean="false"}}
-    #foreach ($uix in $services.uix.getExtensions('org.xwiki.contrib.searchgrid.cell'))
-      $services.rendering.render($uix.execute(), 'html/5.0').trim()
+    #if ("$!displayer" != '' &amp;&amp; $xwiki.exists($displayer))
+      {{include reference="XWiki.SearchGrid.MovieSearchGridItemDisplayer"/}}
+    #else
+      {{include reference="XWiki.SearchGrid.SearchGridItemDisplayer"/}}
     #end
-    {{/html}}
+    ##set ($discard = $xwiki.ssx.use('XWiki.SearchGrid.MovieSearchGridItemDisplayer'))
     #set ($discard = $xcontext.remove('reference'))
   #else
     #set ($obj = $page.getObject($className))
     #set ($separator = '')
-    ##set ($separator = ':::')
     #foreach ($propertyName in $columns)
-      (% class="searchgrid-grid-cell-column searchgrid-grid-cell-column-$propertyName" %)(((
+      (% class="searchgrid-grid-item-column searchgrid-grid-item-column-$propertyName" %)(((
         #if ($documentProperties.indexOf($propertyName) &gt;= 0)
           #if ($propertyName == 'creator')
             {{html clean="false"}}$xwiki.getUserName($page.creator, true){{/html}}
@@ -474,10 +460,12 @@
             #set ($propObjClassProp = $propObjClass.get($propertyName))
             Type: $propObjClassProp.type
             *#
-            ## We wrap in a group to avoid empty lines in case of static list empty value, no idea why this is needed
-            (((
-              $page.display($propertyName, $propObj)
-            )))
+            #if ($propObj != $NULL)
+              ## We wrap in a group to avoid empty lines in case of static list empty value, no idea why this is needed
+              (((
+                $page.display($propertyName, $propObj)
+              )))
+            #end
           #end
         #end
         $separator
@@ -505,10 +493,10 @@
       <description/>
     </property>
     <property>
-      <id>searchGridCell</id>
+      <id>searchGridItem</id>
     </property>
     <property>
-      <name>Search Grid Cell Macro</name>
+      <name>Search Grid Item Macro</name>
     </property>
     <property>
       <priority/>
@@ -521,7 +509,7 @@
     </property>
   </object>
   <object>
-    <name>XWiki.SearchGrid.SearchGridCellMacro</name>
+    <name>XWiki.SearchGrid.SearchGridItemMacro</name>
     <number>0</number>
     <className>XWiki.WikiMacroParameterClass</className>
     <guid>8052f767-bc56-49c6-9053-3f942df05fe2</guid>
@@ -611,7 +599,7 @@
     </property>
   </object>
   <object>
-    <name>XWiki.SearchGrid.SearchGridCellMacro</name>
+    <name>XWiki.SearchGrid.SearchGridItemMacro</name>
     <number>1</number>
     <className>XWiki.WikiMacroParameterClass</className>
     <guid>3538ad09-799e-4d1d-a7c9-21a6f02a6a01</guid>
