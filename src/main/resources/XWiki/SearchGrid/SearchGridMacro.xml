@@ -283,11 +283,12 @@ require(['jquery', 'bootstrap'], function($) {
     $searchGrid.attr('aria-busy', true);
     //$('.search-ui').empty();
     const source = new XWiki.Document(XWiki.Model.resolve('XWiki.SearchGrid.SolrSearch', XWiki.EntityType.DOCUMENT));
-    let queryString = $searchGrid.attr('data-query');
-    let text = $searchGrid.find('.search-form input[name="text"]').val();
-    let facetsAttr = $searchGrid.attr('data-facets');
-    let columns = $searchGrid.attr('data-columns');
-    let cols = $searchGrid.attr('data-cols');
+    const queryString = $searchGrid.attr('data-query');
+    const text = $searchGrid.find('.search-form input[name="text"]').val();
+    const facetsAttr = $searchGrid.attr('data-facets');
+    const columns = $searchGrid.attr('data-columns');
+    const cols = $searchGrid.attr('data-cols');
+    const sortable = $searchGrid.attr('data-sortable');
     let params = new URLSearchParams(queryString);
     if (text !== undefined &amp;&amp; text !== '') {
       params.set('text', text);
@@ -299,6 +300,9 @@ require(['jquery', 'bootstrap'], function($) {
     }
     if (cols !== '') {
       params.set('cols', cols);
+    }
+    if (sortable != '') {
+      params.set('sortable', sortable);
     }
     const facets = facetsAttr.split(',');
     facets.forEach(facet =&gt; {
@@ -568,6 +572,12 @@ require(['jquery', 'bootstrap'], function($) {
     </property>
     <property>
       <code>.searchgrid {
+  font-size: 0.8em;
+
+  .btn, input, .input-group-btn { /** TODO: check why .input-group-btn is needed */
+    font-size: inherit;
+  }
+
   /** This is for the spinner on Firefox and other browsers not supporting the :has pseudo-selector, see Spinner SSX. */
   position: relative;
   &amp;[aria-busy="true"] {
@@ -583,7 +593,6 @@ require(['jquery', 'bootstrap'], function($) {
       grid-template-areas: "facets sort"
         "input input";
       grid-template-columns: 10fr 1fr;
-      margin-bottom: 0.6rem;
       .search-facets {
         grid-area: facets;
         box-shadow: none;
@@ -594,9 +603,10 @@ require(['jquery', 'bootstrap'], function($) {
           display: inline-block;
           border-bottom: none;
           padding: 0;
-          margin-right: 0.3rem;
+          margin-right: 0.3em;
+          margin-bottom: 0.5em;
           &amp;:last-child {
-            padding-right: .3rem;
+            padding-right: .3em;
           }
           /** Do not display any entry in the dropdown menu for empty values. */
           .search-facet-empty-value {
@@ -607,27 +617,33 @@ require(['jquery', 'bootstrap'], function($) {
             font-size: 1.2rem;
           }*/
           /** overrides default to reduce left space */
-          .dropdown-menu &gt; li &gt; a {
-            padding: 3px 12px;
+          .dropdown-menu  {
+            font-size: inherit;
+            &gt; li &gt; a {
+              padding: 3px 12px;
+            }
           }
         }
       }
 
       .search-form {
         width: 200px;
+        margin-bottom: 0.5em;
         grid-area: input;
         .input-group {
           display: flex;
           .btn {
             height: 100%;
           }
+
+          input {
+            border-radius: 0;
+            border: 1px solid #d3d3d3;
+          }
+
         }
         &gt; div {
           padding: 0;
-          input {
-            border-radius: 0;
-            border: 1px solid @brand-primary;
-          }
           .input-group-btn {
             width: inherit;
           }
@@ -641,15 +657,15 @@ require(['jquery', 'bootstrap'], function($) {
 
     .searchgrid-grid {
       display: grid;
-      grid-row-gap: 1rem;
-      grid-column-gap: 1rem;
+      grid-row-gap: 1em;
+      grid-column-gap: 1em;
 
       &amp;.searchgrid-grid-one-col {
         grid-template-columns: 1fr;
-        grid-row-gap: 0.5rem;
+        grid-row-gap: 0.5em;
         .searchgrid-grid-header {
           border: 1px solid @xwiki-border-color;
-          padding: .6rem 1rem;
+          padding: .6em 1em;
           background: lighten(@xwiki-border-color, 7%);
           font-weight: bold;
           .searchgrid-grid-cell {
@@ -678,13 +694,20 @@ require(['jquery', 'bootstrap'], function($) {
       }
     }
     .paginationFilter {
-      margin-top: 0.3rem;
+      margin-top: 0.3em;
     }
+  }
+}
+
+@media (min-width: @screen-sm-min) {
+  .searchgrid {
+    font-size: 0.9em;
   }
 }
 
 @media (min-width: @screen-md-min) {
   .searchgrid {
+    font-size: 1em;
     .search-ui {
       .searchgrid-toolbar {
         grid-template-areas: "facets input sort";
@@ -939,6 +962,7 @@ require(['jquery', 'bootstrap'], function($) {
 {{velocity}}
 #set ($discard = $xwiki.ssx.use($wikimacro.doc.fullName))
 #set ($discard = $xwiki.jsx.use($wikimacro.doc.fullName))
+#set ($discard = $xwiki.ssx.use('XWiki.SearchGrid.SearchGridCellMacro'))
 #set ($searchGridId = $wikimacro.parameters.id)
 #if ("$!searchGridId" == '')
   #set ($searchGridId = $util.generateRandomString(5).toLowerCase())
@@ -983,6 +1007,7 @@ require(['jquery', 'bootstrap'], function($) {
   data-query="$query"
   data-columns="$!wikimacro.parameters.columns"
   data-cols="$!wikimacro.parameters.cols"
+  data-sortable="$!wikimacro.parameters.sortable"
   aria-busy="false"$dataActivate %)(((
     {{spinner top="10rem"/}}
     (% class="search-ui" %)((()))
