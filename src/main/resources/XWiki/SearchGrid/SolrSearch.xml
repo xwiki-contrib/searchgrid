@@ -44,7 +44,7 @@
 #macro (declareFacetDisplayer $className $propertyName)
   #set ($class = $xwiki.getClass($className))
   #set ($property = $class.get($propertyName))
-  #set ($facetDescriptor = $propTypeFacetMap[$property.type])
+  #set ($facetDescriptor = $propertyTypeConfig[$property.type])
   #set ($facetType = $facetDescriptor.get(0))
   #set ($solrFacet = "property.$facet$facetType")
   #set ($discard = $solrConfig.facetFields.add($solrFacet))
@@ -54,18 +54,46 @@
 #set ($solrConfig.facetFields = [])
 #set ($solrConfig.facetDisplayers = {})
 #set ($facets = $request.getParameterValues('facets'))
-#set ($propTypeFacetMap = {
-  'DBListClass': ['_string', 'XWiki.SearchGrid.PageListFacet'],
-  'PageClass': ['_string', 'XWiki.SearchGrid.PageListFacet'],
-  'DateClass': ['_date', 'XWiki.SearchGrid.SolrDateFacet'],
-  'UsersClass': ['_string', 'XWiki.SearchGrid.SolrUserFacet'],
-  'StringClass': ['_string', 'XWiki.SearchGrid.PageListFacet'],
-  'StaticListClass': ['_string', 'XWiki.SearchGrid.StaticListFacet'],
-  'space_facet': ['', 'XWiki.SearchGrid.SolrSpaceFacet'],
-  'creator': ['', 'XWiki.SearchGrid.SolrUserFacet'],
-  'hidden': ['', 'XWiki.SearchGrid.SolrHiddenFacet'],
-  'class': ['', 'XWiki.SearchGrid.SolrClassFacet']
+## We can't sort on multivalued properties for now
+## see https://design.xwiki.org/xwiki/bin/view/Design/SolrSchema#HSortingonObjectProperties
+#set ($propertyTypeConfig = {
+  'DBListClass': ['_string', 'XWiki.SearchGrid.PageListFacet', 'String'],
+  'PageClass': ['_string', 'XWiki.SearchGrid.PageListFacet', 'String'],
+  'DateClass': ['_date', 'XWiki.SearchGrid.SolrDateFacet', 'Date'],
+  'UsersClass': ['_string', 'XWiki.SearchGrid.SolrUserFacet', 'String'],
+  'StringClass': ['_string', 'XWiki.SearchGrid.PageListFacet', 'String'],
+  'StaticListClass': ['_string', 'XWiki.SearchGrid.StaticListFacet', 'String'],
+  'space_facet': ['', 'XWiki.SearchGrid.SolrSpaceFacet', 'String'],
+  'creator': ['', 'XWiki.SearchGrid.SolrUserFacet', 'String'],
+  'hidden': ['', 'XWiki.SearchGrid.SolrHiddenFacet', 'String'],
+  'class': ['', 'XWiki.SearchGrid.SolrClassFacet', 'String']
 })
+## Configure sort
+## TODO adapt and reuse macro extractSortOptions in SearchGridMacros
+## TODO: reuse existing extraction code
+#foreach ($sortable in $request.sortable.split(','))
+  #set ($idx = $sortable.lastIndexOf('.'))
+  #if ($idx &gt; 0)
+    ## Extract class name
+    #set ($propClassName = $sortable.substring(0, $idx))
+    #set ($propSort = $sortable.substring($mathtool.add($idx, 1)))
+  #else
+    #set ($propClassName = $request.f_class)
+    #set ($propSort = $sortable)
+  #end
+  #set ($idx = $propSort.indexOf(':'))
+  #if ($idx &gt; 0)
+    #set ($sortableProperty = $propSort.substring(0, $idx))
+    #set ($sortOrder = $propSort.substring($mathtool.add($idx, 1)))
+  #else
+    #set ($sortableProperty = $propSort)
+    #set ($sortOrder = 'asc')
+  #end
+  #set ($propertyClass = $xwiki.getClass($propClassName))
+  #set ($property = $propertyClass.get($sortableProperty))
+  #set ($config = $propertyTypeConfig[$property.type])
+  #set ($solrConfig['sortFields']['DOCUMENT']["property.${propClassName}.${sortableProperty}_sort${config[2]}"] = $sortOrder)
+#end
 #foreach ($facet in $facets)
   #set ($idx = $facet.lastIndexOf('.'))
   #if ($idx &gt; 0)
