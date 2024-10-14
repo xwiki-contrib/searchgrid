@@ -419,7 +419,7 @@
   #if ($columns.size() == 0)
     #set ($discard = $xcontext.put('reference', $reference))
     #if ("$!displayer" != '' &amp;&amp; $xwiki.exists($displayer))
-      {{include reference="XWiki.SearchGrid.MovieSearchGridItemDisplayer"/}}
+      {{include reference="$displayer"/}}
     #else
       {{include reference="XWiki.SearchGrid.SearchGridItemDisplayer"/}}
     #end
