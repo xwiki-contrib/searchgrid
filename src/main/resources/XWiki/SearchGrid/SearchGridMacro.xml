@@ -60,8 +60,6 @@
 {{searchGrid class="Help.Applications.Movies.Code.MoviesClass" showHidden="false" sort="title:asc" facets="databaseList1,staticList1"/}}
 {{/code}}
 
-The display of the cells within the grid can be customized by creating an UIX for the UIXP ##org.xwiki.contrib.searchgrid.cell##. An example is given in page [[.MovieSearchGridCell]] for displaying Movies in a custom way, the result can be seen on [[.MovieSearchGrid]].
-
 == Table layout ==
 
 {{code language="text"}}
@@ -972,7 +970,6 @@ require(['jquery', 'bootstrap'], function($) {
 #else
   #set ($query = '')
 #end
-#set ($type = $wikimacro.parameters.type)
 #set ($showHidden = "$!wikimacro.parameters.showHidden")
 #set ($query = "$query&amp;hidden=$showHidden")
 #set ($filter = "$!wikimacro.parameters.filter")
@@ -989,6 +986,10 @@ require(['jquery', 'bootstrap'], function($) {
 #set ($limit = "$!wikimacro.parameters.limit")
 #set ($sort = "$!wikimacro.parameters.sort")
 #extractSortOptions($sort, $className, $sortOptions)
+#set ($type = "$!wikimacro.parameters.type")
+#if ($type == '')
+  #set ($type = 'DOCUMENT')
+#end
 #set ($wikiId = $services.wiki.getCurrentWikiDescriptor().getId())
 #set ($query = "$query&amp;sort=${sortOptions.property}&amp;sortOrder=${sortOptions.order}&amp;f_wiki=$wikiId&amp;rows=$limit&amp;r=1&amp;f_type=$type&amp;text=*")
 #set ($query = "${query}&amp;searchGridId=${searchGridId}")
