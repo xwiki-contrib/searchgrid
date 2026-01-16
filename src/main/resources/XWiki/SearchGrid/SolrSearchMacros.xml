@@ -68,8 +68,8 @@
         #if ($input == '*')
           #set ($input = '')
         #end
-        &lt;input type="search" name="text" class="form-control withTip useTitleAsTip"
-          title="$services.localization.render('searchGrid.textSearch.title')" value="$escapetool.xml($input)"/&gt;
+        &lt;input type="search" name="text" class="form-control"
+          title="$services.localization.render('searchGrid.textSearch.title')" placeholder="$escapetool.xml($input)"/&gt;
         &lt;span class="input-group-btn"&gt;
           &lt;button type="submit" class="btn btn-primary"&gt;
             $services.icon.renderHTML('search')
